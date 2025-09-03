@@ -7,6 +7,7 @@
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <algorithm>
+#include <cstring>
 #define MAX_EVENTS 1024
 
 class Server

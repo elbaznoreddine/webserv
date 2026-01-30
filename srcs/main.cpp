@@ -1,20 +1,21 @@
-#include "../headers/Server.hpp"
-#include <cstdlib>
+#include "../headers/Configparser.hpp"
+
 
 int main(int argc, char* argv[]) {
-    int port = 8080;
-
-    if (argc > 1) {
-        port = std::atoi(argv[1]);
+	
+	if (argc != 2) {
+		std::cerr << "./webserv [configuration file]";
+		return 1;
     }
+	
+	std::string config_file = argv[1];
 
-    SimpleServer server(port);
-
-    if (!server.initialize()) {
+    ConfigParser parser(config_file);
+    
+    if (!parser.parse()) {
+        std::cerr << " Failed to parse config file!" << std::endl;
         return 1;
     }
-
-    server.run();
-
+    std::cout << "Config file parsed successfully!" << std::endl;
     return 0;
 }

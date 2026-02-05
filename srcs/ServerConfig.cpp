@@ -1,5 +1,6 @@
 #include "../headers/ConfigParser.hpp"
 
+
 ServerConfig::ServerConfig() 
     : port(8080), 
       host("0.0.0.0"), 
@@ -22,6 +23,7 @@ const std::string& ServerConfig::getHost() const
     return host;
 }
 
+
 void ServerConfig::setPort(int p)
 {
     port = p;
@@ -32,14 +34,15 @@ void ServerConfig::setHost(const std::string& h)
     host = h;
 }
 
+
 const std::string& ServerConfig::getRoot() const
 {
     return root;
 }
 
-const std::string& ServerConfig::getIndex() const
+const std::vector<std::string>& ServerConfig::getIndexFiles() const
 {
-    return index;
+    return index_files;
 }
 
 bool ServerConfig::getAutoindex() const
@@ -62,18 +65,18 @@ size_t ServerConfig::getClientMaxBodySize() const
     return client_max_body_size;
 }
 
-
 void ServerConfig::setRoot(const std::string& r)
 {
     root = r;
 }
 
-void ServerConfig::setIndex(const std::string& i)
+void ServerConfig::addIndexFile(const std::string& i)
 {
-    index = i;
+    index_files.push_back(i);
 }
 
-void ServerConfig::setAutoindex(bool a) {
+void ServerConfig::setAutoindex(bool a)
+{
     autoindex = a;
 }
 
@@ -91,7 +94,6 @@ void ServerConfig::setClientMaxBodySize(size_t size)
 {
     client_max_body_size = size;
 }
-
 
 void ServerConfig::addLocation(const LocationConfig& loc)
 {

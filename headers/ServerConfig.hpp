@@ -1,6 +1,7 @@
 #pragma once
-
-#include "ConfigParser.hpp"
+#include <vector>
+#include <string>
+#include <map>
 class LocationConfig;
 class ServerConfig
 {
@@ -9,7 +10,7 @@ protected:
     std::string host;
     
     std::string root;
-    std::string index;
+    std::vector<std::string> index_files;
     bool autoindex;
     std::vector<std::string> methods;
     std::map<int, std::string> error_pages;
@@ -24,26 +25,23 @@ public:
     int getPort() const;
     const std::string& getHost() const;
 
-
     void setPort(int p);
     void setHost(const std::string& h);
 
     const std::string& getRoot() const;
-    const std::string& getIndex() const;
+    const std::vector<std::string>& getIndexFiles() const;
     bool getAutoindex() const;
     const std::vector<std::string>& getMethods() const;
     const std::map<int, std::string>& getErrorPages() const;
     size_t getClientMaxBodySize() const;
 
-
     void setRoot(const std::string& r);
-    void setIndex(const std::string& i);
+    void addIndexFile(const std::string& i);
     void setAutoindex(bool a);
     void addMethod(const std::string& m);
     void setErrorPage(int code, const std::string& path);
     void setClientMaxBodySize(size_t size);
     
-
     void addLocation(const LocationConfig& loc);
     std::vector<LocationConfig>& getLocations();
 };

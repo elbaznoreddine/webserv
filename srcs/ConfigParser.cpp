@@ -56,9 +56,7 @@ bool check_location(const std::string& line)
 
 bool ConfigParser::is_valid_method(const std::string& method)
 {
-    return (method == "GET" || method == "POST" || method == "DELETE" || 
-            method == "PUT" || method == "HEAD" || method == "OPTIONS" ||
-            method == "PATCH");
+    return (method == "GET" || method == "POST" || method == "DELETE");
 }
 
 int ConfigParser::parse_error_code(const std::string& code)
@@ -132,47 +130,44 @@ void ConfigParser::parse_directive(const std::string& line, ServerConfig& config
     {
         if (directive_has_semicolon && tokens.size() == 1)
             throw std::runtime_error("listen directive requires a value");
-        
         if (tokens.size() < 2)
             throw std::runtime_error("listen directive requires a value");
-        
+
         std::string value = tokens[1];
-        if (value[value.length() - 1] == ';')
+        if (!value.empty() && value[value.length() - 1] == ';')
             value = value.substr(0, value.length() - 1);
         if (value.empty())
-            throw std::runtime_error("listen directive requires a port or address:port");
-        
+            throw std::runtime_error("listen directive requires a port or host:port");
+
+        std::string host = "0.0.0.0";
+        int port = -1;
+
         size_t colon_pos = value.find(':');
         if (colon_pos != std::string::npos)
         {
-            config.setHost(value.substr(0, colon_pos));
-            int port = atoi(value.substr(colon_pos + 1).c_str());
-            if (port <= 0 || port > 65535)
-                throw std::runtime_error("Invalid port number in listen directive");
-            config.setPort(port);
+            host = value.substr(0, colon_pos);
+            port = atoi(value.substr(colon_pos + 1).c_str());
         }
         else
         {
-            int port = atoi(value.c_str());
-            if (port > 0 && port <= 65535)
+            port = atoi(value.c_str());
+            if (port == 0)
             {
-                config.setPort(port);
-            }
-            else if (port == 0)
-            {
-                config.setHost(value);
-            }
-            else
-            {
-                throw std::runtime_error("Invalid port number in listen directive");
+                throw std::runtime_error("listen directive: '" + value + "' is not a valid port or host:port");
             }
         }
+
+        if (port <= 0 || port > 65535)
+            throw std::runtime_error("listen directive: invalid port number: " + value);
+
+        config.addListen(host, port);
     }
     else if (directive == "root")
     {
         if (tokens.size() < 2)
             throw std::runtime_error("root directive requires a value");
-        
+        if (!config.getRoot().empty())
+			throw std::runtime_error("root directive is duplicate");
         std::string value = tokens[1];
         if (value[value.length() - 1] == ';')
             value = value.substr(0, value.length() - 1);
@@ -224,15 +219,18 @@ void ConfigParser::parse_directive(const std::string& line, ServerConfig& config
     }
     else if (directive == "client_max_body_size")
     {
-        if (tokens.size() < 2)
-            throw std::runtime_error("client_max_body_size directive requires a value");
-        
+		if (tokens.size() < 2)
+			throw std::runtime_error("client_max_body_size directive requires a value");
+		if (!config.getClientMaxBodySize().empty())
+			throw std::runtime_error("client_max_body_size directive is duplicate");
         std::string value = tokens[1];
         if (value[value.length() - 1] == ';')
             value = value.substr(0, value.length() - 1);
         
         size_t size = parse_size(value);
-        config.setClientMaxBodySize(size);
+		std::stringstream ss;
+		ss << size;
+        config.setClientMaxBodySize(ss.str());
     }
     else if (directive == "allow_methods" || directive == "methods")
     {
@@ -475,6 +473,8 @@ ServerConfig ConfigParser::parse_server(const std::vector<std::string>& lines, s
         
         parse_directive(line, server);
     }
+	if (server.getListen().empty())
+		server.addListen("0.0.0.0", 80);
     
     return server;
 }

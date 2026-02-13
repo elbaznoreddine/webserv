@@ -2,10 +2,7 @@
 
 
 ServerConfig::ServerConfig() 
-    : port(8080), 
-      host("0.0.0.0"), 
-      autoindex(false), 
-      client_max_body_size(1048576)
+    : autoindex(false)
 {
 }
 
@@ -13,26 +10,33 @@ ServerConfig::~ServerConfig()
 {
 }
 
-int ServerConfig::getPort() const
+// int ServerConfig::getPort() const
+// {
+//     return port;
+// }
+
+// const std::string& ServerConfig::getHost() const
+// {
+//     return host;
+// }
+void ServerConfig::addListen(const std::string& host, int port)
 {
-    return port;
+    all_listen.push_back(Listen(host, port));
+}
+const std::vector<Listen> &ServerConfig::getListen() const
+{
+	return (all_listen);
 }
 
-const std::string& ServerConfig::getHost() const
-{
-    return host;
-}
+// void ServerConfig::setPort(int p)
+// {
+//     port = p;
+// }
 
-
-void ServerConfig::setPort(int p)
-{
-    port = p;
-}
-
-void ServerConfig::setHost(const std::string& h)
-{
-    host = h;
-}
+// void ServerConfig::setHost(const std::string& h)
+// {
+//     host = h;
+// }
 
 
 const std::string& ServerConfig::getRoot() const
@@ -60,7 +64,7 @@ const std::map<int, std::string>& ServerConfig::getErrorPages() const
     return error_pages;
 }
 
-size_t ServerConfig::getClientMaxBodySize() const
+std::string ServerConfig::getClientMaxBodySize() const
 {
     return client_max_body_size;
 }
@@ -90,7 +94,7 @@ void ServerConfig::setErrorPage(int code, const std::string& path)
     error_pages[code] = path;
 }
 
-void ServerConfig::setClientMaxBodySize(size_t size)
+void ServerConfig::setClientMaxBodySize(std::string size)
 {
     client_max_body_size = size;
 }

@@ -9,7 +9,11 @@ int main(int argc, char* argv[])
 	}
 	
 	std::string config_file = argv[1];
-	
+	if (config_file.length() < 5 || config_file.substr(config_file.length() - 5) != ".conf")
+	{
+		std::cerr << "the file extention must be .conf";
+		return 1;
+	}
 	try
 	{
 		ConfigParser parser(config_file);
@@ -20,14 +24,21 @@ int main(int argc, char* argv[])
 			return 1;
 		}
 		
+		std::cout << "Configuration parsed successfully!" << std::endl;
+		
 		const std::vector<ServerConfig>& servers = parser.getServers();
 		std::cout << "Number of servers: " << servers.size() << std::endl;
 		
 		for (size_t i = 0; i < servers.size(); i++)
 		{
 			std::cout << "\nServer " << (i + 1) << ":" << std::endl;
-			std::cout << "  Host: " << servers[i].getHost() << std::endl;
-			std::cout << "  Port: " << servers[i].getPort() << std::endl;
+
+			const std::vector<Listen>& pairs = servers[i].getListen();
+			for (size_t j = 0; j < pairs.size(); j++)
+			{
+				std::cout << "  Listen: " << pairs[j].host
+				          << ":" << pairs[j].port << std::endl;
+			}
 			
 			std::cout << "  Root: " << servers[i].getRoot() << std::endl;
 			
@@ -110,7 +121,7 @@ int main(int argc, char* argv[])
 						std::cout << std::endl;
 					}
 					
-					if (locations[j].getClientMaxBodySize() != 1048576)
+					if (locations[j].getClientMaxBodySize().empty())
 						std::cout << "      Client Max Body Size: " << locations[j].getClientMaxBodySize() << " bytes" << std::endl;
 					
 					if (!locations[j].getCgiPath().empty())
@@ -155,22 +166,3 @@ int main(int argc, char* argv[])
 	
 	return 0;
 }
-// int main(int argc, char* argv[]) {
-	
-// 	if (argc != 2) {
-// 		std::cerr << "./webserv [configuration file]";
-// 		return 1;
-//     }
-	
-// 	std::string config_file = argv[1];
-// 	try
-// 	{
-// 		ConfigParser parser(config_file);
-// 		parser.parse();
-// 	}
-// 	catch(const std::exception& e)
-// 	{
-// 		std::cerr << e.what() << '\n';
-// 	}
-//     return 0;
-// }

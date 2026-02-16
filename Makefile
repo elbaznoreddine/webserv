@@ -1,7 +1,10 @@
-CPPFLAGS = -Wall -Wextra -Werror -std=c++98
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
 CPP = c++
 
-SRC = srcs/main.cpp srcs/Server.cpp
+SRC =  srcs/main.cpp \
+       srcs/ConfigParser.cpp \
+       srcs/ServerConfig.cpp \
+       srcs/LocationConfig.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -12,7 +15,7 @@ all : $(NAME)
 $(NAME): $(OBJ)
 	$(CPP) $(CPPFLAGS) $(OBJ) -o $(NAME)
 
-%.o:%.cpp headers/Server.hpp
+%.o:%.cpp headers/Configparser.hpp headers/Serverconfig.hpp headers/Locationconfig.hpp
 	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 clean:

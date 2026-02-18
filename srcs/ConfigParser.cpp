@@ -541,33 +541,49 @@ bool ConfigParser::parse()
     
     if (open_braces != 0)
 		throw std::runtime_error("Syntax Error: Unclosed curly braces");
-    
+
+	size_t server_index = 0;
     for (size_t i = 0; i < all_data.size(); i++)
     {
-		if (check_server(all_data[i]))
-		{
-		    size_t j = i + 1;
-		    int server_braces = 1;
-		    
-			for (; j < all_data.size(); j++)
-			{
-			    if (all_data[j].find('{') != std::string::npos)
-			        server_braces++;
-			    if (all_data[j].find('}') != std::string::npos)
-			    {
-			        server_braces--;
-			        if (server_braces == 0)
-			            break;
-			    }
-			}
-			
-			ServerConfig server = parse_server(all_data, i + 1, j - 1);
-			servers.push_back(server);
-			
-			i = j;
-    	}
-    }
+        if (check_server(all_data[i]))
+        {
+            server_index++;
+            size_t j = i;
+            int server_braces = 0;
+            bool found_open = false;
 
+            for (; j < all_data.size(); j++)
+            {
+                if (all_data[j].find('{') != std::string::npos)
+                {
+                    server_braces++;
+                    found_open = true;
+                }
+                if (all_data[j].find('}') != std::string::npos)
+                {
+                    server_braces--;
+                    if (server_braces == 0)
+                        break;
+                }
+            }
+            if (!found_open)
+                throw std::runtime_error("server block : missing opening '{'");
+            if (server_braces != 0)
+                throw std::runtime_error("server block : missing closing '}'");
+
+            try
+            {
+                ServerConfig server = parse_server(all_data, i + 1, j - 1);
+                servers.push_back(server);
+            }
+            catch (const std::exception& e)
+            {
+                throw std::runtime_error(e.what());
+            }
+
+            i = j;
+        }
+    }
 	return true;
 }
 

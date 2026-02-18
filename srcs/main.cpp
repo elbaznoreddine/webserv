@@ -1,4 +1,4 @@
-#include "../headers/Configparser.hpp"
+#include "../headers/Server.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -157,6 +157,9 @@ int main(int argc, char* argv[])
 				}
 			}
 		}
+		Server s(parser);
+		s.startServers();
+		
 	}
 	catch(const std::exception& e)
 	{

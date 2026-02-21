@@ -10,9 +10,7 @@ void Server::startServers()
     int epollfd = epoll_create1(0);
     if (epollfd == -1)
         throw std::runtime_error("epoll_create1 failed");
-
-    struct epoll_event ev;
-    struct epoll_event ep_events[100];
+    struct epoll_event ev, ep_events[MAX_EVENTS];
 
     for (size_t i = 0; i < servers.size(); i++)
     {
@@ -66,7 +64,7 @@ void Server::startServers()
 
     while (1)
     {
-        int nfds = epoll_wait(epollfd, ep_events, 100, -1);
+        int nfds = epoll_wait(epollfd, ep_events, MAX_EVENTS, -1);
         if (nfds == -1)
         throw std::runtime_error("epoll_wait failed");
 
@@ -92,7 +90,7 @@ void Server::startServers()
         else
         {
             char buffer[4096] = {'\0'};
-            int bytes = read(fd, buffer, sizeof(buffer));
+            int bytes = recv(fd, buffer, sizeof(buffer), 0);
             if (bytes <= 0)
             {
                 epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, NULL);

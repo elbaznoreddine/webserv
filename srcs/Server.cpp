@@ -7,7 +7,7 @@ void Server::startServers()
 {
     std::vector<ServerConfig> servers = _servers.getServers();
 
-    int epollfd = epoll_create1(0);
+    int epollfd = epoll_create(1);
     if (epollfd == -1)
         throw std::runtime_error("epoll_create1 failed");
     struct epoll_event ev, ep_events[MAX_EVENTS];

@@ -4,8 +4,12 @@ CPP = c++
 SRC =  srcs/main.cpp \
        srcs/ConfigParser.cpp \
        srcs/ServerConfig.cpp \
-       srcs/LocationConfig.cpp
-
+       srcs/LocationConfig.cpp \
+	   srcs/Server.cpp
+HEADERS = headers/Configparser.hpp \
+		  headers/Serverconfig.hpp \
+		  headers/Locationconfig.hpp \
+		  headers/Server.hpp
 OBJ = $(SRC:.cpp=.o)
 
 NAME = webserv
@@ -15,7 +19,7 @@ all : $(NAME)
 $(NAME): $(OBJ)
 	$(CPP) $(CPPFLAGS) $(OBJ) -o $(NAME)
 
-%.o:%.cpp headers/Configparser.hpp headers/Serverconfig.hpp headers/Locationconfig.hpp
+%.o:%.cpp $(HEADERS)
 	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 clean:

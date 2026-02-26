@@ -1,0 +1,10 @@
+curl http://127.0.0.1:8080 --http1.0
+curl -iv http://127.0.0.1:8001/test.html -H "keay:val" -b "adsada==a" -d "dasdasdas" -X GET
+
+-H for headers
+-b for cookies
+-d for body
+-X for method
+
+curl --data "@/path/to/filename" http://...
+curl --cookie "Name=Value" [URL]

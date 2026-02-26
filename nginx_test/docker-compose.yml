@@ -1,0 +1,8 @@
+services:
+  nginx:
+    image: nginx_webserv:0.1
+    container_name: nginx_webserv
+    build: .
+    ports:
+      - "8001:8001"
+    restart: always

@@ -1,0 +1,7 @@
+http://127.0.0.1:8001  -> HTTP/1.0 403 Forbidden
+http://127.0.0.1:8001/ -> HTTP/1.0 403 Forbidden
+http://127.0.0.1:8001/. -> HTTP/1.0 403 Forbidden
+http://127.0.0.1:8001/.. -> HTTP/1.0 403 Forbidden
+http://127.0.0.1:8001/../../../etc -> HTTP/1.0 404 Not Found
+http://127.0.0.1:8001/000file -> HTTP/1.0 404 Not Found
+http://127.0.0.1:8001/folder -> HTTP/1.0 301 Moved Permanently

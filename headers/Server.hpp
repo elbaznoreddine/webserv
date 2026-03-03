@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <algorithm>
 #include <cstring>
+#include  <signal.h>
 #define MAX_EVENTS 1024
 
 class Server

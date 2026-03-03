@@ -5,6 +5,7 @@ Server::Server(ConfigParser& servers) : _servers(servers)
 
 void Server::startServers()
 {
+    signal(SIGQUIT, SIG_IGN);
     std::vector<ServerConfig> servers = _servers.getServers();
     int epollfd = epoll_create(1);
     if (epollfd == -1)
@@ -177,12 +178,8 @@ void Server::startServers()
                 }
                 if (!raw_request.empty())
                 {
-                    std::string response =
-                        "HTTP/1.1 200 OK\r\n"
-                        "Content-Length: 13\r\n"
-                        "Connection: close\r\n"
-                        "\r\n"
-                        "Hello, World!";
+                    std::cout << raw_request << raw_request.size()<<std::endl;
+                    std::string response = "";
                     size_t total_sent = 0;
                     while (total_sent < response.size())
                     {

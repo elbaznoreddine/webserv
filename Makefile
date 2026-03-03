@@ -9,7 +9,8 @@ SRC =  srcs/main.cpp \
 HEADERS = headers/Configparser.hpp \
 		  headers/Serverconfig.hpp \
 		  headers/Locationconfig.hpp \
-		  headers/Server.hpp
+		  headers/Server.hpp \
+		  headers/Client.hpp
 OBJ = $(SRC:.cpp=.o)
 
 NAME = webserv

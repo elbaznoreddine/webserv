@@ -9,15 +9,13 @@
 #include <algorithm>
 #include <cstring>
 #include  <signal.h>
-#define MAX_EVENTS 1024
+#include "Client.hpp"
 
 class Server
 {
 	private:
 		std::vector<int> fds;
-		// std::vector<int> epoll_fds;
-		// std::vector<int> epoll_client_fds;
-		// std::vector<int> epoll_server_fds;
+		std::map<int, Client> clients;
 		std::vector<int> server_fds; 
 		ConfigParser& _servers;
 	public:

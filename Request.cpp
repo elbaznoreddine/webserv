@@ -4,6 +4,7 @@ Request::Request()
 {
 	this->autoIndex = false;
 	this->index = false;
+	this->fd = 0;
 }
 
 Request::~Request()
@@ -11,9 +12,8 @@ Request::~Request()
 
 }
 
-std::string Request::parser(std::stringstream &ss)
+bool Request::parseFirstLine(std::stringstream &ss)
 {
-	this->fd = 0;
 	std::string line;
 	std::getline(ss, line);
 
@@ -21,16 +21,23 @@ std::string Request::parser(std::stringstream &ss)
 	std::string word;
 
 	while (f1 >> word)
-		vec.push_back(word);
-	if (vec.size() != 3 || (vec[0] != "GET" && vec[0] != "POST" && vec[0] != "DELETE") || (vec[2] != "HTTP/1.0" && vec[2] != "HTTP/1.1"))
+		this->vec.push_back(word);
+	if (this->vec.size() != 3 || (this->vec[0] != "GET" && this->vec[0] != "POST" && this->vec[0] != "DELETE") || (this->vec[2] != "HTTP/1.0" && this->vec[2] != "HTTP/1.1"))
 	{
 		this->res.setCode("400");
 		this->res.setMsg("Bad Request");
-		return this->res.make_res();
+		this->res.make_res();
+		return false;
 	}
-	this->method = vec[0];
-	this->path = vec[1];
-	this->protocol = vec[2];
+	this->method = this->vec[0];
+	this->path = this->vec[1];
+	this->protocol = this->vec[2];
+	return true;
+}
+
+void Request::parseHedear(std::stringstream &ss)
+{
+	std::string line;
 	while (std::getline(ss, line))
 	{
 		if (line[0] == '\r')
@@ -41,10 +48,15 @@ std::string Request::parser(std::stringstream &ss)
 		ss1 >> key;
 		ss1 >> val;
 		key = key.substr(0, key.size() - 1);
-		map.insert(std::make_pair(key, val));
+		this->map.insert(std::make_pair(key, val));
 	}
-	std::string data((std::istreambuf_iterator<char>(ss)),std::istreambuf_iterator<char>());
-	this->body = data;
+}
+
+void Request::parser(std::stringstream &ss)
+{
+	if (!this->parseFirstLine(ss))
+		return ;
+	this->parseHedear(ss);
 	if (this->method == "GET")
 		get();
 	if (this->method == "DELETE")
@@ -59,7 +71,8 @@ std::string Request::parser(std::stringstream &ss)
 	this->res.setAutoIndex(this->autoIndex);
 	this->res.setBody(this->body);
 	this->res.setMap(this->map);
-	return this->res.make_res();
+	this->res.make_res();
+	return ;
 }
 
 void Request::get()
@@ -107,8 +120,8 @@ void Request::get()
 			this->fd = open(this->rpath.c_str(), O_RDONLY);
 			if (this->fd == -1)
 			{
-				this->res.setCode("404");
-				this->res.setMsg("Not Found");
+				this->res.setCode("403");
+				this->res.setMsg("Forbidden");
 				break;
 			}
 			close(this->fd);
@@ -142,38 +155,6 @@ void Request::del()
 	this->rpath = "./html/" + this->path;
 	stat(this->rpath.c_str(), &sb);
 	switch (sb.st_mode & S_IFMT) {
-		case S_IFDIR:
-			if (this->rpath[this->rpath.size() - 1] != '/')
-			{
-				this->res.setCode("301");
-				this->res.setMsg("Moved Permanently");
-			}
-			else if (!writeAccess)
-			{
-				this->res.setCode("301");
-				this->res.setMsg("Moved Permanently");
-			}
-			else
-			{
-				DIR *dir;
-				dir = opendir(this->rpath.c_str());
-				struct dirent *ent;
-				if (dir)
-				{
-					ent = readdir(dir);
-					while (ent)
-					{
-						std::string str = this->rpath + ent->d_name;
-						std::remove(str.c_str());
-						ent = readdir(dir);
-					}
-					closedir(dir);
-				}
-				std::remove(this->rpath.c_str());
-				this->res.setCode("200");
-				this->res.setMsg("OK");
-			}
-			break;
 		case S_IFREG:
 			this->fd = open(this->rpath.c_str(), O_RDONLY);
 			if (this->fd == -1)

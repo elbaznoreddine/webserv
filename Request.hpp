@@ -25,14 +25,24 @@ class Request
 		std::string protocol;
 		bool index;
 		bool autoIndex;
-		bool writeAccess;
 		int fd;
-		Response res;
 	public:
+		Response res;
 		Request();
 		~Request();
 		void get();
 		void post();
 		void del();
-		std::string parser(std::stringstream &ss);
+		void parser(std::stringstream &str);
+		bool parseFirstLine(std::stringstream &ss);
+		void parseHedear(std::stringstream &ss);
+		std::string& getMethod()
+		{
+			return this->method;
+		}
+
+		std::string& getStatus()
+		{
+			return this->res.getStatus();
+		}
 };

@@ -11,11 +11,11 @@ class Response
 		std::string protocol;
 		std::string code;
 		std::string msg;
+		std::string res;
 
 		std::string server;
 		std::string cType;
 		std::string cLength;
-		std::string connection;
 
 		std::string method;
 		std::string path;
@@ -28,7 +28,7 @@ class Response
 	public:	
 		Response();
 		~Response();
-		std::string make_res();
+		void make_res();
 		std::string htmlPage();
 		void setCode(std::string str);
 		void setMsg(std::string str);
@@ -41,4 +41,12 @@ class Response
 		void setMap(std::map<std::string, std::string>& map);
 		void setAutoIndex(bool b);
 		std::string getType(std::string& str);
+		std::string getRes();
+		void Cookie();
+		void autoIndexFun(std::string &data);
+		void readFile(std::string &data);
+		std::string& getStatus()
+		{
+			return this->code;
+		}
 };

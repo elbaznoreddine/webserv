@@ -71,6 +71,8 @@ int main()
     std::cout << "Listening on port " << config.port << std::endl;
 
     std::stringstream ss;
+    std::stringstream out0;
+    std::string str = "";
     Request req;
     while (true)
     {
@@ -80,59 +82,64 @@ int main()
         if (client_socket < 0)
             continue;
 
-        char buffer[4096];
+        char buffer[1024];
         std::memset(buffer, 0, sizeof(buffer));
-
         int bytes = read(client_socket, buffer, sizeof(buffer) - 1);
-		int i = 0;
-		while (buffer[i])
+        std::string s;
+		while (true)
         {
-            ss << buffer[i];
-			// vec.push_back(buffer[i]);
-            i++;
+            str += buffer;
+            size_t len = str.find("\r\n\r\n");
+            if (len != std::string::npos)
+            {
+                ss << str.substr(0, len);
+                s = buffer;
+                for (int i = s.find("\r\n\r\n") + 4; i < bytes; i++)
+                    out0 << buffer[i];
+                break ;
+            }
+            if (bytes != 1023)
+                break ;
+            bytes = read(client_socket, buffer, sizeof(buffer) - 1);
         }
-
-        
-
-        // if (bytes > 0)
-        // {
-            // buffer[bytes] = '\0';
-
-            // // 🔥 RAW REQUEST (NO parsing)
-            // std::cout << "===== RAW REQUEST =====" << std::endl;
-            // std::cout << buffer << std::endl;
-            // // 🔥 MANUAL HTTP/1.0 RESPONSE
-            // std::string response =
-            //     "HTTP/1.0 200 OK\r\n"
-            //     "Content-Type: text/plain\r\n"
-            //     "Content-Length: 13\r\n"
-            //     "\r\n"
-            //     "Hello, world!";
-
-            // send(client_socket, response.c_str(), response.size(), 0);
-			// Request req;
-			// Response res;
-
-			// std::ifstream file("req");
-			// req.parser(buffer);
-        // }
-
-		// if (bytes > 0)
-		// {
-			// for (std::vector<char>::iterator it = vec.begin(); it != vec.end(); it++)
-            // {
-            //     if (*it == '\r')
-            //         std::cout << "\\r";
-            //     else
-			// 	    std::cout << *it;
-            // }
-            // std::cout << std::endl;
-			// close(client_socket); // HTTP/1.0 closes connection
-		// }
-        (void)bytes;
-        std::string res = req.parser(ss);
-        send(client_socket, res.c_str(), res.size(), 0);
+        req.parser(ss);
+        if (req.getMethod() == "POST" && req.getStatus() == "200")
+        {
+            std::ofstream out("out", std::ios::binary);
+            std::string file((std::istreambuf_iterator<char>(out0)),std::istreambuf_iterator<char>());
+            out << file;
+            if (bytes == 1023)
+            {
+                bytes = read(client_socket, buffer, sizeof(buffer) - 1);
+                while (true)
+                {
+                    for (int i = 0; i < bytes; i++)
+                        out << buffer[i];
+                    if (bytes != 1023)
+                        break ;
+                    bytes = read(client_socket, buffer, sizeof(buffer) - 1);
+                }
+            }
+        }
+        std::string str1 = req.res.getRes();
+        while (true)
+        {
+            if (str1.size() == 0)
+                break ;
+            if (str1.size() > 1000000)
+            {
+                str = str1.substr(0, 1000000);
+                str1.erase(0, 1000000);
+            }
+            else
+            {
+                str = str1;
+                str1.erase(0, str1.size());
+            }
+            send(client_socket, str.c_str(), str.size(), 0);
+        }
         close(client_socket);
+        exit(0);
     }
     close(server_fd);
     return 0;

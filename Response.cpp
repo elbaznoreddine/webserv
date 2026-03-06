@@ -12,43 +12,43 @@ Response::~Response()
 
 }
 
-std::string Response::make_res()
+void Response::autoIndexFun(std::string &data)
 {
-	std::string data0;
+	data = "<html>\n";
+	data += "<body>\n";
+	data += "<h1>index</h1>\n";
+	for (std::vector<std::string>::iterator it = folders.begin(); it != folders.end(); it++)
+		data += "<p><a href='/" + *it + "'>" + *it + "</a></p>\n";
+	data += "</body>\n";
+	data += "</html>\n";
+	this->cType = "text/html";
+	std::stringstream ss;
+	ss << data.length();
+	this->cLength = ss.str();
+}
+
+void Response::readFile(std::string &data)
+{
+	std::ifstream inp(this->rpath.c_str(), std::ios::binary);
+	std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
+	data = file;
+	this->cType = this->getType(this->path);
+	std::stringstream ss;
+	ss << data.length();
+	this->cLength = ss.str();
+}
+
+void Response::make_res()
+{
 	std::string data1;
-	data0 = this->protocol + " " + this->code + " " + this->msg + "\r\n";
-	data0 += "Server: " + this->server + "\r\n";
+	this->res = this->protocol + " " + this->code + " " + this->msg + "\r\n";
+	this->res += "Server: " + this->server + "\r\n";
 	if (this->method == "GET" && this->code == "200")
 	{
 		if (this->autoIndex)
-		{
-			data1 = "<html>\n";
-			data1 += "<body>\n";
-			data1 += "<h1>index</h1>\n";
-			for (std::vector<std::string>::iterator it = folders.begin(); it != folders.end(); it++)
-				data1 += "<p><a href='/" + *it + "'>" + *it + "</a></p>\n";
-			data1 += "</body>\n";
-			data1 += "</html>\n";
-			this->cType = "text/html";
-			std::stringstream ss;
-			ss << data1.length();
-			this->cLength = ss.str();
-		}
+			this->autoIndexFun(data1);
 		else
-		{
-			std::ifstream inp(this->rpath.c_str(), std::ios::binary);
-			std::string data((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
-			data1 = data;
-			this->cType = this->getType(this->path);
-			std::stringstream ss;
-			ss << data1.length();
-			this->cLength = ss.str();
-		}
-	}
-	else if (this->method == "POST")
-	{
-		std::ofstream file("out", std::ios::binary);
-		file << this->body;
+			this->readFile(data1);
 	}
 	else if (this->code != "200")
 	{
@@ -58,18 +58,21 @@ std::string Response::make_res()
 		ss << data1.length();
 		this->cLength = ss.str();
 	}
-	this->connection = "close";
 	if (this->method != "DELETE")
 	{
-		data0 += "Content-Type: " + this->cType + "\r\n";
-		data0 += "Content-Length: " + this->cLength + "\r\n";
+		this->res += "Content-Type: " + this->cType + "\r\n";
+		this->res += "Content-Length: " + this->cLength + "\r\n";
 	}
+	this->Cookie();
+	this->res += "Connection: close\r\n";
+	this->res +=  "\r\n";
+	this->res +=  data1;
+}
+
+void Response::Cookie()
+{
 	if (this->map.find("Cookie") != this->map.end())
-		data0 += "Set-Cookie: " + this->map.find("Cookie")->second + ";\r\n";
-	data0 += "Connection: " + this->connection + "\r\n";
-	data0 +=  "\r\n";
-	std::string str = data0 + data1;
-	return str;
+		this->res += "Set-Cookie: " + this->map.find("Cookie")->second + "\r\n";
 }
 
 std::string Response::htmlPage()
@@ -140,4 +143,9 @@ std::string Response::getType(std::string& str)
 void Response::setMap(std::map<std::string, std::string>& map)
 {
 	this->map = map;
+}
+
+std::string Response::getRes()
+{
+	return this->res;
 }

@@ -291,9 +291,11 @@ void ConfigParser::parse_location_directive(const std::string& line, LocationCon
     {
         if (tokens.size() < 2)
             throw std::runtime_error("redirect directive requires a value");
-        if (tokens.size() >= 3)
+        if (tokens.size() >= 2)
         {
             std::string first_val = tokens[1];
+            if (first_val[first_val.length() - 1] == ';')
+                first_val = first_val.substr(0, first_val.length() - 1);
             bool is_code = true;
             for (size_t i = 0; i < first_val.length(); i++)
             {
@@ -309,22 +311,16 @@ void ConfigParser::parse_location_directive(const std::string& line, LocationCon
                 int code = atoi(first_val.c_str());
                 if (code >= 300 && code < 400)
                     config.setRedirectCode(code);
-                
+                else
+                    throw std::runtime_error("invalid return code : "+first_val);
                 std::string value = tokens[2];
                 if (value[value.length() - 1] == ';')
                     value = value.substr(0, value.length() - 1);
                 config.setRedirect(value);
                 return;
             }
+            throw std::runtime_error("invalid return code : "+first_val);
         }
-        std::string value = tokens[1];
-        if (tokens.size() > 2)
-        {
-            value = tokens[2];
-        }
-        if (value[value.length() - 1] == ';')
-            value = value.substr(0, value.length() - 1);
-        config.setRedirect(value);
     }
     else if (directive == "upload_enable")
     {

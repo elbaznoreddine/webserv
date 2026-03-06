@@ -1,5 +1,15 @@
 #include "../headers/Server.hpp"
-
+#include "../Request.hpp"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <cstdlib>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <arpa/inet.h>
 int main(int argc, char* argv[])
 {
 	

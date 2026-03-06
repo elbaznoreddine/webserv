@@ -7,6 +7,7 @@ Server::Server(ConfigParser& servers) : _servers(servers)
 void Server::startServers()
 {
     signal(SIGQUIT, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
 
     std::vector<ServerConfig> servers = _servers.getServers();
     std::vector<struct pollfd> pollfds;
@@ -113,6 +114,15 @@ void Server::startServers()
                 Client &client = clients[fd];
 				Request req;
 
+				if ((pollfds[i].revents & (POLLERR | POLLHUP | POLLNVAL)))
+				{
+					close(fd);
+					clients.erase(fd);
+					pollfds.erase(pollfds.begin() + i);
+					i--;
+					continue;
+					
+				}
                 if ((pollfds[i].revents & POLLIN) && client.state == Client::READING)
                 {
 					std::stringstream ss;
@@ -150,7 +160,7 @@ void Server::startServers()
 							bytes = read(fd, buffer, sizeof(buffer) - 1);
 						}
 					}
-                    std::string str1 = req.res.getRes();
+                    // std::string str1 = req.res.getRes();
                     // while (true)
                     // {
                     //     if (str1.size() == 0)

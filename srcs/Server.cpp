@@ -3,8 +3,6 @@
 Server::Server(ConfigParser& servers) : _servers(servers)
 {}
 
-#include <poll.h>
-
 void Server::startServers()
 {
     signal(SIGQUIT, SIG_IGN);
@@ -22,9 +20,9 @@ void Server::startServers()
             if (serverSocket < 0)
                 throw std::runtime_error("socket failed");
 
-            int opt = 1;
-            if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-                throw std::runtime_error("setsockopt failed");
+            // int opt = 1;
+            // if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+            //     throw std::runtime_error("setsockopt failed");
 
             int flags = fcntl(serverSocket, F_GETFL, 0);
             if (flags < 0 || fcntl(serverSocket, F_SETFL, flags | O_NONBLOCK) < 0)
@@ -133,12 +131,7 @@ void Server::startServers()
                     bool requestComplete = true;
                     if (requestComplete)
                     {
-                        client.writeBuffer =
-                            "HTTP/1.1 200 OK\r\n"
-                            "Content-Length: 5\r\n"
-                            "Content-Type: text/plain\r\n\r\n"
-                            "Hello";
-
+                        client.writeBuffer ="";
                         client.state = Client::WRITING;
                         pollfds[i].events = POLLOUT;
                     }

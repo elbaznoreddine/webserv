@@ -5,16 +5,16 @@ SRC =  srcs/main.cpp \
        srcs/ConfigParser.cpp \
        srcs/ServerConfig.cpp \
        srcs/LocationConfig.cpp \
-  	   srcs/Server.cpp \
-	     Request.cpp \
-	     Response.cpp 
+	   srcs/Server.cpp \
+	   Request.cpp \
+	   Response.cpp 
 HEADERS = headers/Configparser.hpp \
-		      headers/Serverconfig.hpp \
-		      headers/Locationconfig.hpp \
-		      headers/Server.hpp \
-		      headers/Client.hpp \
-		      Request.hpp \
-		      Response.hpp 
+		  headers/Serverconfig.hpp \
+		  headers/Locationconfig.hpp \
+		  headers/Server.hpp \
+		  headers/Client.hpp \
+		  Request.hpp \
+		  Response.hpp 
 OBJ = $(SRC:.cpp=.o)
 
 NAME = webserv

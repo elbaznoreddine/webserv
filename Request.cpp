@@ -22,7 +22,9 @@ bool Request::parseFirstLine(std::stringstream &ss)
 
 	while (f1 >> word)
 		this->vec.push_back(word);
-	if (this->vec.size() != 3 || (this->vec[0] != "GET" && this->vec[0] != "POST" && this->vec[0] != "DELETE") || (this->vec[2] != "HTTP/1.0" && this->vec[2] != "HTTP/1.1"))
+	if (this->vec.size() != 3
+	|| (this->vec[0] != "GET" && this->vec[0] != "POST" && this->vec[0] != "DELETE") 
+	|| (this->vec[2] != "HTTP/1.0" && this->vec[2] != "HTTP/1.1"))
 	{
 		this->res.setCode("400");
 		this->res.setMsg("Bad Request");
@@ -169,15 +171,7 @@ void Request::del()
 			this->res.setMsg("OK");
 			break;
 		default:
-			if (errno == 2)
-			{
-				this->res.setCode("404");
-				this->res.setMsg("Not Found");
-			}
-			else
-			{
-				this->res.setCode("403");
-				this->res.setMsg("Forbidden");
-			}
+			this->res.setCode("403");
+			this->res.setMsg("Forbidden");
 	}
 }

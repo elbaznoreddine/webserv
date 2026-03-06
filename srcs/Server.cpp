@@ -117,12 +117,12 @@ void Server::startServers()
                 {
 					std::stringstream ss;
 					std::stringstream out0;
-					std::string str;
+					std::string str = "";
 					char buffer[1024];
 					std::memset(buffer, 0, sizeof(buffer));
 					int bytes = read(fd, buffer, sizeof(buffer) - 1);
 					std::string s;
-					while (bytes > 0)
+					while (true)
 					{
 						str += buffer;
 						size_t len = str.find("\r\n\r\n");
@@ -134,6 +134,8 @@ void Server::startServers()
 								out0 << buffer[i];
 							break ;
 						}
+						if (bytes != 1023)
+							break ;
 						bytes = read(fd, buffer, sizeof(buffer) - 1);
 					}
 					req.parser(ss);
@@ -142,31 +144,37 @@ void Server::startServers()
 						std::ofstream out("out", std::ios::binary);
 						std::string file((std::istreambuf_iterator<char>(out0)),std::istreambuf_iterator<char>());
 						out << file;
-						bytes = read(fd, buffer, sizeof(buffer) - 1);
-						while (bytes > 0)
+						if (bytes == 1023)
 						{
-							for (int i = 0; i < bytes; i++)
-								out << buffer[i];
 							bytes = read(fd, buffer, sizeof(buffer) - 1);
+							while (true)
+							{
+								for (int i = 0; i < bytes; i++)
+									out << buffer[i];
+								if (bytes != 1023)
+									break ;
+								bytes = read(fd, buffer, sizeof(buffer) - 1);
+							}
 						}
 					}
-                    std::string str1 = req.res.getRes();
-                    // while (true)
-                    // {
-                    //     if (str1.size() == 0)
-                    //         break ;
-                    //     if (str1.size() > 1000000)
-                    //     {
-                    //         str = str1.substr(0, 1000000);
-                    //         str1.erase(0, 1000000);
-                    //     }
-                    //     else
-                    //     {
-                    //         str = str1;
-                    //         str1.erase(0, str1.size());
-                    //     }
-                    //     send(fd, str.c_str(), str.size(), 0);
-                    // }
+						///end
+						// std::string str1 = req.res.getRes();
+						// while (true)
+						// {
+						// 	if (str1.size() == 0)
+						// 		break ;
+						// 	if (str1.size() > 1000000)
+						// 	{
+						// 		str = str1.substr(0, 1000000);
+						// 		str1.erase(0, 1000000);
+						// 	}
+						// 	else
+						// 	{
+						// 		str = str1;
+						// 		str1.erase(0, str1.size());
+						// 	}
+						// 	send(fd, str.c_str(), str.size(), 0);
+						// }
 
                     client.lastActivity = now;
 					client.writeBuffer.append(req.res.getRes());
@@ -197,6 +205,7 @@ void Server::startServers()
 
                     if (client.bytesSent >= client.writeBuffer.size())
                     {
+                        client.readBuffer.clear();
                         client.writeBuffer.clear();
                         client.bytesSent = 0;
                         client.state = Client::READING;

@@ -66,8 +66,6 @@ void Response::make_res()
 	this->Cookie();
 	this->res += "Connection: close\r\n";
 	this->res +=  "\r\n";
-	if (this->method == "DELETE")
-		this->res += '\0';
 	this->res +=  data1;
 }
 

@@ -1,0 +1,92 @@
+#include "../headers/ConfigParser.hpp"
+LocationConfig::LocationConfig() : ServerConfig(), upload_enable(false), redirect_code(0)
+{
+}
+
+LocationConfig::LocationConfig(const std::string& p) : ServerConfig(), path(p), upload_enable(false), redirect_code(0)
+{
+}
+
+LocationConfig::~LocationConfig()
+{
+}
+
+const std::string& LocationConfig::getPath() const
+{
+    return path;
+}
+
+const std::string& LocationConfig::getCgiExtension() const
+{
+    return cgi_extension;
+}
+
+const std::string& LocationConfig::getCgiPath() const
+{
+    return cgi_path;
+}
+
+const std::string& LocationConfig::getRedirect() const
+{
+    return redirect;
+}
+
+const std::string& LocationConfig::getUploadPath() const
+{
+    return upload_path;
+}
+
+bool LocationConfig::getUploadEnable() const
+{
+    return upload_enable;
+}
+
+int LocationConfig::getRedirectCode() const
+{
+    return redirect_code;
+}
+
+const std::map<std::string, std::string>& LocationConfig::getCgiHandlers() const
+{
+    return cgi_handlers;
+}
+
+void LocationConfig::setPath(const std::string& p)
+{
+    path = p;
+}
+
+void LocationConfig::setCgiExtension(const std::string& ext)
+{
+    cgi_extension = ext;
+}
+
+void LocationConfig::setCgiPath(const std::string& p)
+{
+    cgi_path = p;
+}
+
+void LocationConfig::setRedirect(const std::string& r)
+{
+    redirect = r;
+}
+
+void LocationConfig::setUploadPath(const std::string& p)
+{
+    upload_path = p;
+}
+
+void LocationConfig::setUploadEnable(bool enable)
+{
+    upload_enable = enable;
+}
+
+void LocationConfig::setRedirectCode(int code)
+{
+    redirect_code = code;
+}
+
+void LocationConfig::addCgiHandler(const std::string& extension, const std::string& interpreter)
+{
+    cgi_handlers[extension] = interpreter;
+}

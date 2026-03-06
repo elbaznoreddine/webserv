@@ -1,20 +1,31 @@
-CC = c++
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
+CPP = c++
 
-FLAGS = -Wall -Wextra -Werror -std=c++98
+SRC =  srcs/main.cpp \
+       srcs/ConfigParser.cpp \
+       srcs/ServerConfig.cpp \
+       srcs/LocationConfig.cpp \
+	   srcs/Server.cpp \
+	   Request.cpp \
+	   Response.cpp 
+HEADERS = headers/Configparser.hpp \
+		  headers/Serverconfig.hpp \
+		  headers/Locationconfig.hpp \
+		  headers/Server.hpp \
+		  headers/Client.hpp \
+		  Request.hpp \
+		  Response.hpp 
+OBJ = $(SRC:.cpp=.o)
 
 NAME = webserv
 
-SRC = main.cpp Request.cpp Response.cpp
+all : $(NAME)
 
-OBJ = $(SRC:.cpp=.o)
+$(NAME): $(OBJ)
+	$(CPP) $(CPPFLAGS) $(OBJ) -o $(NAME)
 
-all: $(NAME)
-
-$(NAME): $(OBJ) Request.hpp Response.hpp
-	$(CC) $(FLAGS) $(OBJ) -o $(NAME)
-
-%.o: %.cpp Request.hpp Response.hpp
-	$(CC) $(FLAGS) -c $< -o $@
+%.o:%.cpp $(HEADERS)
+	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(OBJ)
@@ -23,20 +34,3 @@ fclean: clean
 	rm -rf $(NAME)
 
 re: fclean all
-
-srv:
-	make -C nginx_test
-
-srv-exec:
-	docker exec -it nginx_webserv sh
-
-srv-down:
-	make down -C nginx_test
-
-srv-clean:
-	make clean -C nginx_test
-
-srv-fclean: srv-clean
-	make fclean -C nginx_test
-
-srv-re: srv-fclean srv

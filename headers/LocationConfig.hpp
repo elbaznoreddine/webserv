@@ -5,8 +5,6 @@ class LocationConfig : public ServerConfig
 {
 private:
     std::string path;
-    std::string cgi_extension;
-    std::string cgi_path;
     std::string redirect;
     std::string upload_path;
     bool upload_enable;
@@ -19,17 +17,12 @@ public:
     ~LocationConfig();
 
     const std::string& getPath() const;
-    const std::string& getCgiExtension() const;
-    const std::string& getCgiPath() const;
     const std::string& getRedirect() const;
     const std::string& getUploadPath() const;
     bool getUploadEnable() const;
     int getRedirectCode() const;
     const std::map<std::string, std::string>& getCgiHandlers() const;
-
     void setPath(const std::string& p);
-    void setCgiExtension(const std::string& ext);
-    void setCgiPath(const std::string& p);
     void setRedirect(const std::string& r);
     void setUploadPath(const std::string& p);
     void setUploadEnable(bool enable);

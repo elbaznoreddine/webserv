@@ -139,7 +139,6 @@ void Server::startServers()
 					req.parser(ss);
 					if (req.getMethod() == "POST" && req.getStatus() == "200")
 					{
-						// std::ofstream out("out", std::ios::binary);
                         std::stringstream out;
 						std::string file((std::istreambuf_iterator<char>(out0)),std::istreambuf_iterator<char>());
 						out << file;
@@ -172,7 +171,7 @@ void Server::startServers()
                             }
                             else if (line == "\r" && !filename.empty())
                             {
-                                std::ofstream output(filename + "1", std::ios::binary);
+                                std::ofstream output(filename, std::ios::binary);
                                 std::getline(out, line);
                                 while (true)
                                 {

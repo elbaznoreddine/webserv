@@ -14,7 +14,7 @@
 
 class Request
 {
-	private:
+	public:
 		std::vector<std::string> vec;
 		std::vector<std::string> folders;
 		std::map<std::string, std::string> map;

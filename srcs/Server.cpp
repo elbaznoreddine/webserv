@@ -139,7 +139,8 @@ void Server::startServers()
 					req.parser(ss);
 					if (req.getMethod() == "POST" && req.getStatus() == "200")
 					{
-						std::ofstream out("out", std::ios::binary);
+						// std::ofstream out("out", std::ios::binary);
+                        std::stringstream out;
 						std::string file((std::istreambuf_iterator<char>(out0)),std::istreambuf_iterator<char>());
 						out << file;
 						bytes = read(fd, buffer, sizeof(buffer) - 1);
@@ -149,6 +150,41 @@ void Server::startServers()
 								out << buffer[i];
 							bytes = read(fd, buffer, sizeof(buffer) - 1);
 						}
+
+                        std::stringstream ct(req.map["Content-Type"]);
+                        std::string boundary;
+                        ct >> boundary;
+                        ct >> boundary;
+                        boundary.erase(0, boundary.find("=") + 1);
+                        boundary = "--" + boundary;
+                        std::string line;
+                        std::getline(out, line);
+                        std::string filename;
+
+                        while (true)
+                        {
+                            if (line.find(boundary + "--\r") != std::string::npos || line.empty())
+                                break ;
+                            else if (line.find("filename") != std::string::npos)
+                            {
+                                filename = line.substr(line.find("filename") + 10);
+                                filename.erase(filename.size() - 2);
+                            }
+                            else if (line == "\r" && !filename.empty())
+                            {
+                                std::ofstream output(filename + "1", std::ios::binary);
+                                std::getline(out, line);
+                                while (true)
+                                {
+                                    if (line.find(boundary + "\r") != std::string::npos || line.find(boundary + "--\r") != std::string::npos)
+                                        break ;
+                                    output << line << std::endl;
+                                    std::getline(out, line);
+                                }
+                                filename = "";
+                            }
+                            std::getline(out, line);
+                        }
 					}
                     std::string str1 = req.res.getRes();
                     // while (true)

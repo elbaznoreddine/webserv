@@ -7,7 +7,7 @@
 
 class Response
 {
-	private:
+	public:
 		std::string protocol;
 		std::string code;
 		std::string msg;

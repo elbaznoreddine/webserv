@@ -47,9 +47,11 @@ void Request::parseHedear(std::stringstream &ss)
 		std::stringstream ss1(line);
 		std::string key;
 		std::string val;
-		ss1 >> key;
-		ss1 >> val;
-		key = key.substr(0, key.size() - 1);
+		// ss1 >> key;
+		// ss1 >> val;
+		std::getline(ss1, key, ':');
+		std::getline(ss1, val);
+		// key = key.substr(0, key.size() - 1);
 		this->map.insert(std::make_pair(key, val));
 	}
 }

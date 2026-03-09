@@ -116,7 +116,7 @@ void Server::startServers()
                 if ((pollfds[i].revents & POLLIN) && client.state == Client::READING)
                 {
 					std::stringstream ss;
-					std::stringstream out0;
+					std::stringstream out;
 					std::string str;
 					char buffer[1024];
 					std::memset(buffer, 0, sizeof(buffer));
@@ -131,26 +131,17 @@ void Server::startServers()
 							ss << str.substr(0, len);
 							s = buffer;
 							for (int i = s.find("\r\n\r\n") + 4; i < bytes; i++)
-								out0 << buffer[i];
+								out << buffer[i];
 							break ;
 						}
 						bytes = read(fd, buffer, sizeof(buffer) - 1);
 					}
-					req.parser(ss);
-					if (req.getMethod() == "POST" && req.getStatus() == "200")
-					{
-						std::ofstream out("out", std::ios::binary);
-						std::string file((std::istreambuf_iterator<char>(out0)),std::istreambuf_iterator<char>());
-						out << file;
-						bytes = read(fd, buffer, sizeof(buffer) - 1);
-						while (bytes > 0)
-						{
-							for (int i = 0; i < bytes; i++)
-								out << buffer[i];
-							bytes = read(fd, buffer, sizeof(buffer) - 1);
-						}
-					}
+
+                    
+					req.parser(ss, out, fd);
                     std::string str1 = req.res.getRes();
+
+
                     // while (true)
                     // {
                     //     if (str1.size() == 0)

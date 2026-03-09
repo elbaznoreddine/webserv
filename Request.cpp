@@ -47,14 +47,13 @@ void Request::parseHedear(std::stringstream &ss)
 		std::stringstream ss1(line);
 		std::string key;
 		std::string val;
-		ss1 >> key;
-		ss1 >> val;
-		key = key.substr(0, key.size() - 1);
+		std::getline(ss1, key, ':');
+		std::getline(ss1, val);
 		this->map.insert(std::make_pair(key, val));
 	}
 }
 
-void Request::parser(std::stringstream &ss)
+void Request::parser(std::stringstream &ss, std::stringstream &out, int fd)
 {
 	if (!this->parseFirstLine(ss))
 		return ;
@@ -64,7 +63,7 @@ void Request::parser(std::stringstream &ss)
 	if (this->method == "DELETE")
 		del();
 	if (this->method == "POST")
-		post();
+		post(out, fd);
 	this->res.setMethod(this->method);
 	this->res.setPath(this->path);
 	this->res.setRpath(this->rpath);
@@ -145,8 +144,52 @@ void Request::get()
 }
 
 
-void Request::post()
+void Request::post(std::stringstream &out, int fd)
 {
+	char buffer[1024];
+	std::memset(buffer, 0, sizeof(buffer));
+	int bytes = read(fd, buffer, sizeof(buffer) - 1);
+	while (bytes > 0)
+	{
+		for (int i = 0; i < bytes; i++)
+			out << buffer[i];
+		bytes = read(fd, buffer, sizeof(buffer) - 1);
+	}
+
+	std::stringstream ct(this->map["Content-Type"]);
+	std::string boundary;
+	ct >> boundary;
+	ct >> boundary;
+	boundary.erase(0, boundary.find("=") + 1);
+	boundary = "--" + boundary;
+	std::string line;
+	std::getline(out, line);
+	std::string filename;
+
+	while (true)
+	{
+		if (line.find(boundary + "--\r") != std::string::npos || line.empty())
+			break ;
+		else if (line.find("filename") != std::string::npos)
+		{
+			filename = line.substr(line.find("filename") + 10);
+			filename.erase(filename.size() - 2);
+		}
+		else if (line == "\r" && !filename.empty())
+		{
+			std::ofstream output(filename, std::ios::binary);
+			std::getline(out, line);
+			while (true)
+			{
+				if (line.find(boundary + "\r") != std::string::npos || line.find(boundary + "--\r") != std::string::npos)
+					break ;
+				output << line << std::endl;
+				std::getline(out, line);
+			}
+			filename = "";
+		}
+		std::getline(out, line);
+	}
 	this->res.setCode("200");
 	this->res.setMsg("OK");
 }
@@ -174,4 +217,14 @@ void Request::del()
 			this->res.setCode("403");
 			this->res.setMsg("Forbidden");
 	}
+}
+
+std::string& Request::getMethod()
+{
+	return this->method;
+}
+
+std::string& Request::getStatus()
+{
+	return this->res.getStatus();
 }

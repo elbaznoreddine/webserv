@@ -31,9 +31,9 @@ class Request
 		Request();
 		~Request();
 		void get();
-		void post();
+		void post(std::stringstream &out, int fd);
 		void del();
-		void parser(std::stringstream &str);
+		void parser(std::stringstream &ss, std::stringstream &out, int fd);
 		bool parseFirstLine(std::stringstream &ss);
 		void parseHedear(std::stringstream &ss);
 		std::string& getMethod()

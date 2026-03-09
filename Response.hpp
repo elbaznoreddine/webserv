@@ -45,8 +45,5 @@ class Response
 		void Cookie();
 		void autoIndexFun(std::string &data);
 		void readFile(std::string &data);
-		std::string& getStatus()
-		{
-			return this->code;
-		}
+		std::string& getStatus();
 };

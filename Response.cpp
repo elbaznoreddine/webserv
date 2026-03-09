@@ -151,3 +151,8 @@ std::string Response::getRes()
 {
 	return this->res;
 }
+
+std::string& Response::getStatus()
+{
+	return this->code;
+}

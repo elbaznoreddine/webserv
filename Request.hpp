@@ -36,13 +36,6 @@ class Request
 		void parser(std::stringstream &ss, std::stringstream &out, int fd);
 		bool parseFirstLine(std::stringstream &ss);
 		void parseHedear(std::stringstream &ss);
-		std::string& getMethod()
-		{
-			return this->method;
-		}
-
-		std::string& getStatus()
-		{
-			return this->res.getStatus();
-		}
+		std::string& getMethod();
+		std::string& getStatus();
 };

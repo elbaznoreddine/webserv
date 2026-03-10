@@ -14,7 +14,7 @@
 
 class Request
 {
-	private:
+	public:
 		std::vector<std::string> vec;
 		std::vector<std::string> folders;
 		std::map<std::string, std::string> map;
@@ -31,18 +31,11 @@ class Request
 		Request();
 		~Request();
 		void get();
-		void post();
+		void post(std::stringstream &out, int fd);
 		void del();
-		void parser(std::stringstream &str);
+		void parser(std::stringstream &ss, std::stringstream &out, int fd);
 		bool parseFirstLine(std::stringstream &ss);
 		void parseHedear(std::stringstream &ss);
-		std::string& getMethod()
-		{
-			return this->method;
-		}
-
-		std::string& getStatus()
-		{
-			return this->res.getStatus();
-		}
+		std::string& getMethod();
+		std::string& getStatus();
 };

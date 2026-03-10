@@ -146,9 +146,7 @@ void Server::startServers()
 						}
 						bytes = read(fd, buffer, sizeof(buffer) - 1);
 					}
-
 					req.parser(ss, out, fd);
-
                     // while (true)
                     // {
                     //     if (str1.size() == 0)
@@ -165,7 +163,6 @@ void Server::startServers()
                     //     }
                     //     send(fd, str.c_str(), str.size(), 0);
                     // }
-
                     client.lastActivity = now;
 					client.writeBuffer.append(req.res.getRes());
 					client.state = Client::WRITING;

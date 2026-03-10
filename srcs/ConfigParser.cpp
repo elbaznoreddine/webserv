@@ -265,29 +265,7 @@ void ConfigParser::parse_location_directive(const std::string& line, LocationCon
         directive = directive.substr(0, directive.length() - 1);
         directive_has_semicolon = true;
     }
-    if (directive == "cgi_extension")
-    {
-        if (directive_has_semicolon && tokens.size() == 1)
-            throw std::runtime_error("cgi_extension directive requires a value");
-        if (tokens.size() < 2)
-            throw std::runtime_error("cgi_extension directive requires a value");
-        
-        std::string value = tokens[1];
-        if (value[value.length() - 1] == ';')
-            value = value.substr(0, value.length() - 1);
-        config.setCgiExtension(value);
-    }
-    else if (directive == "cgi_path")
-    {
-        if (tokens.size() < 2)
-            throw std::runtime_error("cgi_path directive requires a value");
-        
-        std::string value = tokens[1];
-        if (value[value.length() - 1] == ';')
-            value = value.substr(0, value.length() - 1);
-        config.setCgiPath(value);
-    }
-    else if (directive == "return" || directive == "redirect")
+    if (directive == "return" || directive == "redirect")
     {
         if (tokens.size() < 2)
             throw std::runtime_error("redirect directive requires a value");

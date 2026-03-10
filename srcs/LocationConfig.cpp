@@ -16,16 +16,6 @@ const std::string& LocationConfig::getPath() const
     return path;
 }
 
-const std::string& LocationConfig::getCgiExtension() const
-{
-    return cgi_extension;
-}
-
-const std::string& LocationConfig::getCgiPath() const
-{
-    return cgi_path;
-}
-
 const std::string& LocationConfig::getRedirect() const
 {
     return redirect;
@@ -54,16 +44,6 @@ const std::map<std::string, std::string>& LocationConfig::getCgiHandlers() const
 void LocationConfig::setPath(const std::string& p)
 {
     path = p;
-}
-
-void LocationConfig::setCgiExtension(const std::string& ext)
-{
-    cgi_extension = ext;
-}
-
-void LocationConfig::setCgiPath(const std::string& p)
-{
-    cgi_path = p;
 }
 
 void LocationConfig::setRedirect(const std::string& r)

@@ -137,10 +137,7 @@ void Server::startServers()
 						bytes = read(fd, buffer, sizeof(buffer) - 1);
 					}
 
-                    
 					req.parser(ss, out, fd);
-                    std::string str1 = req.res.getRes();
-
 
                     // while (true)
                     // {

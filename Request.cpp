@@ -192,6 +192,10 @@ void Request::post(std::stringstream &out, int fd)
 	}
 	this->res.setCode("200");
 	this->res.setMsg("OK");
+	std::stringstream ss;
+	ss << out.str().size();
+	this->res.cLength = ss.str();
+	this->res.cType = "text/plain";
 }
 
 void Request::del()

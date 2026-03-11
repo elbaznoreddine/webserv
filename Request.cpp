@@ -143,8 +143,7 @@ void Request::get()
 	}
 }
 
-
-void Request::post(std::stringstream &out, int fd)
+void Request::fullBody(std::stringstream &out, int fd)
 {
 	char buffer[1024];
 	std::memset(buffer, 0, sizeof(buffer));
@@ -155,20 +154,29 @@ void Request::post(std::stringstream &out, int fd)
 			out << buffer[i];
 		bytes = read(fd, buffer, sizeof(buffer) - 1);
 	}
+}
 
+void Request::getBoundary()
+{
 	std::stringstream ct(this->map["Content-Type"]);
-	std::string boundary;
-	ct >> boundary;
-	ct >> boundary;
-	boundary.erase(0, boundary.find("=") + 1);
-	boundary = "--" + boundary;
+	ct >> this->boundary;
+	ct >>	this->boundary;
+	this->boundary.erase(0, boundary.find("=") + 1);
+	this->boundary = "--" + this->boundary;
+}
+
+void Request::post(std::stringstream &out, int fd)
+{
+	this->fullBody(out, fd);
+	this->getBoundary();
+
+
 	std::string line;
 	std::getline(out, line);
 	std::string filename;
-
 	while (true)
 	{
-		if (line.find(boundary + "--\r") != std::string::npos || line.empty())
+		if (line.find(this->boundary + "--\r") != std::string::npos || line.empty())
 			break ;
 		else if (line.find("filename") != std::string::npos)
 		{
@@ -181,7 +189,7 @@ void Request::post(std::stringstream &out, int fd)
 			std::getline(out, line);
 			while (true)
 			{
-				if (line.find(boundary + "\r") != std::string::npos || line.find(boundary + "--\r") != std::string::npos)
+				if (line.find(this->boundary + "\r") != std::string::npos || line.find(this->boundary + "--\r") != std::string::npos)
 					break ;
 				output << line << std::endl;
 				std::getline(out, line);
@@ -190,6 +198,7 @@ void Request::post(std::stringstream &out, int fd)
 		}
 		std::getline(out, line);
 	}
+
 	this->res.setCode("200");
 	this->res.setMsg("OK");
 	std::stringstream ss;

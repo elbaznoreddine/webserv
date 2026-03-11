@@ -23,6 +23,7 @@ class Request
 		std::string path;
 		std::string rpath;
 		std::string protocol;
+		std::string boundary;
 		bool index;
 		bool autoIndex;
 		int fd;
@@ -38,4 +39,6 @@ class Request
 		void parseHedear(std::stringstream &ss);
 		std::string& getMethod();
 		std::string& getStatus();
+		void fullBody(std::stringstream &out, int fd);
+		void getBoundary();
 };

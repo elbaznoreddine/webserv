@@ -165,12 +165,8 @@ void Request::getBoundary()
 	this->boundary = "--" + this->boundary;
 }
 
-void Request::post(std::stringstream &out, int fd)
+void  Request::postAction(std::stringstream &out)
 {
-	this->fullBody(out, fd);
-	this->getBoundary();
-
-
 	std::string line;
 	std::getline(out, line);
 	std::string filename;
@@ -198,7 +194,13 @@ void Request::post(std::stringstream &out, int fd)
 		}
 		std::getline(out, line);
 	}
+}
 
+void Request::post(std::stringstream &out, int fd)
+{
+	this->fullBody(out, fd);
+	this->getBoundary();
+	this->postAction(out);
 	this->res.setCode("200");
 	this->res.setMsg("OK");
 	std::stringstream ss;

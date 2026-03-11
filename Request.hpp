@@ -41,4 +41,5 @@ class Request
 		std::string& getStatus();
 		void fullBody(std::stringstream &out, int fd);
 		void getBoundary();
+		void postAction(std::stringstream &out);
 };

@@ -168,9 +168,8 @@ void Request::getBoundary()
 void  Request::postAction(std::stringstream &out)
 {
 	std::string line;
-	std::getline(out, line);
 	std::string filename;
-	while (true)
+	while (std::getline(out, line))
 	{
 		if (line.find(this->boundary + "--\r") != std::string::npos || line.empty())
 			break ;
@@ -192,7 +191,6 @@ void  Request::postAction(std::stringstream &out)
 			}
 			filename = "";
 		}
-		std::getline(out, line);
 	}
 }
 

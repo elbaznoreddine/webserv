@@ -181,13 +181,11 @@ void  Request::postAction(std::stringstream &out)
 		else if (line == "\r" && !filename.empty())
 		{
 			std::ofstream output(filename, std::ios::binary);
-			std::getline(out, line);
-			while (true)
+			while (std::getline(out, line))
 			{
 				if (line.find(this->boundary + "\r") != std::string::npos || line.find(this->boundary + "--\r") != std::string::npos)
 					break ;
 				output << line << std::endl;
-				std::getline(out, line);
 			}
 			filename = "";
 		}

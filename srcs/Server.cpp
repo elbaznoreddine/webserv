@@ -130,7 +130,7 @@ void Server::startServers()
 					std::string str;
 					char buffer[1024];
 					std::memset(buffer, 0, sizeof(buffer));
-					int bytes = read(fd, buffer, sizeof(buffer) - 1);
+					int bytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 					std::string s;
 					while (bytes > 0)
 					{
@@ -144,7 +144,7 @@ void Server::startServers()
 								out << buffer[i];
 							break ;
 						}
-						bytes = read(fd, buffer, sizeof(buffer) - 1);
+						bytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 					}
 					req.parser(ss, out, fd);
                     // while (true)

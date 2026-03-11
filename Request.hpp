@@ -32,14 +32,14 @@ class Request
 		Request();
 		~Request();
 		void get();
-		void post(std::stringstream &out, int fd);
+		void post(std::stringstream &out, int fdo);
 		void del();
-		void parser(std::stringstream &ss, std::stringstream &out, int fd);
+		void parser(std::stringstream &ss, std::stringstream &out, int fdo);
 		bool parseFirstLine(std::stringstream &ss);
 		void parseHedear(std::stringstream &ss);
 		std::string& getMethod();
 		std::string& getStatus();
-		void fullBody(std::stringstream &out, int fd);
+		void fullBody(std::stringstream &out, int fdo);
 		void getBoundary();
 		void postAction(std::stringstream &out);
 };

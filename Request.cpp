@@ -1,4 +1,5 @@
 #include "Request.hpp"
+#include "headers/Server.hpp"
 
 Request::Request()
 {
@@ -53,7 +54,7 @@ void Request::parseHedear(std::stringstream &ss)
 	}
 }
 
-void Request::parser(std::stringstream &ss, std::stringstream &out, int fd)
+void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo)
 {
 	if (!this->parseFirstLine(ss))
 		return ;
@@ -63,7 +64,7 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fd)
 	if (this->method == "DELETE")
 		del();
 	if (this->method == "POST")
-		post(out, fd);
+		post(out, fdo);
 	this->res.setMethod(this->method);
 	this->res.setPath(this->path);
 	this->res.setRpath(this->rpath);
@@ -143,16 +144,17 @@ void Request::get()
 	}
 }
 
-void Request::fullBody(std::stringstream &out, int fd)
+void Request::fullBody(std::stringstream &out, int fdo)
 {
 	char buffer[1024];
 	std::memset(buffer, 0, sizeof(buffer));
-	int bytes = read(fd, buffer, sizeof(buffer) - 1);
+	int bytes = recv(fdo, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 	while (bytes > 0)
 	{
 		for (int i = 0; i < bytes; i++)
 			out << buffer[i];
-		bytes = read(fd, buffer, sizeof(buffer) - 1);
+		std::memset(buffer, 0, sizeof(buffer));
+		bytes = recv(fdo, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 	}
 }
 
@@ -192,9 +194,9 @@ void  Request::postAction(std::stringstream &out)
 	}
 }
 
-void Request::post(std::stringstream &out, int fd)
+void Request::post(std::stringstream &out, int fdo)
 {
-	this->fullBody(out, fd);
+	this->fullBody(out, fdo);
 	this->getBoundary();
 	this->postAction(out);
 	this->res.setCode("200");

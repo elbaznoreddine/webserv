@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Home</title>
+
+<script>
+function getCookie(name){
+    let cookies = document.cookie.split(";");
+    for(let c of cookies){
+        let [k,v] = c.trim().split("=");
+        if(k === name) return v;
+    }
+    return null;
+}
+
+window.onload = function(){
+
+    let sid = getCookie("sid");
+
+    if(!sid){
+        window.location = "login.html";
+    }else{
+        document.getElementById("sid").innerText = sid;
+    }
+}
+
+function logout(){
+    document.cookie = "sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    window.location = "login.html";
+}
+</script>
+
+<style>
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#43cea2,#185a9d);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    text-align:center;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Home Page</h2>
+
+<p>Your session ID:</p>
+
+<b id="sid"></b>
+
+<br><br>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+</body>
+</html>

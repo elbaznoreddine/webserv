@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+
+<script>
+function getCookie(name){
+    let cookies = document.cookie.split(";");
+    for(let c of cookies){
+        let [k,v] = c.trim().split("=");
+        if(k === name) return v;
+    }
+    return null;
+}
+
+window.onload = function(){
+    if(getCookie("sid")){
+        window.location = "home.html";
+    }
+}
+
+function login(){
+    let sid = Math.floor(Math.random()*1000000);
+
+    document.cookie = "sid=" + sid + "; path=/";
+
+    window.location = "home.html";
+}
+</script>
+
+<style>
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    text-align:center;
+}
+
+button{
+    padding:10px 20px;
+    font-size:16px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+<h2>Login Page</h2>
+
+<button onclick="login()">Login</button>
+
+</div>
+
+</body>
+</html>

@@ -183,12 +183,16 @@ void  Request::postAction(std::stringstream &out)
 		else if (line == "\r" && !filename.empty())
 		{
 			std::ofstream output(filename, std::ios::binary);
+			std::stringstream out1;
 			while (std::getline(out, line))
 			{
 				if (line.find(this->boundary + "\r") != std::string::npos || line.find(this->boundary + "--\r") != std::string::npos)
 					break ;
-				output << line << std::endl;
+				out1 << line << std::endl;
 			}
+			std::string s = out1.str();
+			s.erase(s.size() - 2);
+			output << s;
 			filename = "";
 		}
 	}
@@ -197,6 +201,17 @@ void  Request::postAction(std::stringstream &out)
 void Request::post(std::stringstream &out, int fdo)
 {
 	this->fullBody(out, fdo);
+
+	// for (size_t i = 0; i < out.str().size(); i++)
+	// {
+	// 	if (out.str()[i] == '\r')
+	// 		std::cout << "\\r";
+	// 	else if (out.str()[i] == '\n')
+	// 		std::cout << "\\n\n";
+	// 	else
+	// 		std::cout << out.str()[i];
+	// }
+
 	this->getBoundary();
 	this->postAction(out);
 	this->res.setCode("200");

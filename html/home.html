@@ -15,17 +15,26 @@ function getCookie(name){
 
 window.onload = function(){
 
-    let sid = getCookie("sid");
+    let sid = getCookie("login");
 
     if(!sid){
         window.location = "login.html";
     }else{
-        document.getElementById("sid").innerText = sid;
+        document.getElementById("login").innerText = sid;
     }
 }
 
 function logout(){
-    document.cookie = "sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    const cookies = document.cookie.split(";");
+
+for (let i = 0; i < cookies.length; i++) {
+  const cookie = cookies[i];
+  const eqPos = cookie.indexOf("=");
+  const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+
+  document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+  document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
     window.location = "login.html";
 }
 </script>

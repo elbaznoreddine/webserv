@@ -74,7 +74,8 @@ void Response::make_res()
 void Response::Cookie()
 {
 	if (this->map.find("Cookie") != this->map.end())
-		this->res += "Set-Cookie: " + this->map.find("Cookie")->second + "\r\n";
+		if (this->map.find("Cookie")->second.find("sid="))
+			this->res += "Set-Cookie: login=1\r\n";
 }
 
 std::string Response::htmlPage()

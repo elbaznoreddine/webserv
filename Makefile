@@ -7,7 +7,8 @@ SRC =  srcs/main.cpp \
        srcs/LocationConfig.cpp \
 	   srcs/Server.cpp \
 	   Request.cpp \
-	   Response.cpp 
+	   Response.cpp \
+	   cgi.cpp
 HEADERS = headers/Configparser.hpp \
 		  headers/Serverconfig.hpp \
 		  headers/Locationconfig.hpp \

@@ -222,7 +222,7 @@ void  Request::postAction(std::stringstream &out, bool upload)
 		}
 		else if (line == "\r" && !filename.empty() && upload)
 		{
-			std::ofstream output(filename, std::ios::binary);
+			std::ofstream output(this->rpath + "/" + filename, std::ios::binary);
 			std::stringstream out1;
 			while (std::getline(out, line))
 			{

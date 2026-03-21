@@ -146,7 +146,7 @@ void Server::startServers()
 						}
 						bytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 					}
-					req.parser(ss, out, fd);
+					req.parser(ss, out, fd, servers);
                     // while (true)
                     // {
                     //     if (str1.size() == 0)

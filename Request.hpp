@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include "Response.hpp"
+#include "headers/ServerConfig.hpp"
 
 class Request
 {
@@ -34,7 +35,7 @@ class Request
 		void get();
 		void post(std::stringstream &out, int fdo);
 		void del();
-		void parser(std::stringstream &ss, std::stringstream &out, int fdo);
+		void parser(std::stringstream &ss, std::stringstream &out, int fdo, std::vector<ServerConfig> &servers);
 		bool parseFirstLine(std::stringstream &ss);
 		void parseHedear(std::stringstream &ss);
 		std::string& getMethod();

@@ -54,8 +54,21 @@ void Request::parseHedear(std::stringstream &ss)
 	}
 }
 
-void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo)
+void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std::vector<ServerConfig> &servers)
 {
+
+	for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
+		std::cout << "!!!!!!!!!!!!!!!!!\n";
+		std::cout << "auto index : " << it->autoindex << "\n";
+		it->
+		std::cout << "max body size : " << it->client_max_body_size << "\n";
+		std::cout << "error_pages : " << "\n";
+		for (std::map<int, std::string>::iterator it1 = it->error_pages.begin(); it1 != it->error_pages.end(); it1++)
+			std::cout << it1->first << " :: " << it1->second << "\n";
+	}
+	exit(10);
+
 	if (!this->parseFirstLine(ss))
 		return ;
 	this->parseHedear(ss);

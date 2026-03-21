@@ -3,7 +3,7 @@
 #include "ServerConfig.hpp"
 class LocationConfig : public ServerConfig
 {
-private:
+public:
     std::string path;
     std::string redirect;
     std::string upload_path;

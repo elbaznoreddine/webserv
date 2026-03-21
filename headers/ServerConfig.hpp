@@ -13,7 +13,7 @@ struct Listen
 class LocationConfig;
 class ServerConfig
 {
-protected:
+public:
     // int port;
     // std::string host;
 	std::vector<Listen> all_listen;

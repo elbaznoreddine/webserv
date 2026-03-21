@@ -106,9 +106,9 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std
 		if (this->method == "GET")
 			get(it0);
 		if (this->method == "DELETE")
-			del();
+			del(it0);
 		if (this->method == "POST")
-			post(out, fdo);
+			post(out, fdo, it0);
 	}
 	this->res.setMethod(this->method);
 	this->res.setPath(this->path);
@@ -260,8 +260,14 @@ void  Request::postAction(std::stringstream &out)
 	}
 }
 
-void Request::post(std::stringstream &out, int fdo)
+void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>::iterator &it0)
 {
+	if (std::find(it0->methods.begin(), it0->methods.end(), "POST") == it0->methods.end())
+	{
+		this->res.setCode("403");
+		this->res.setMsg("Forbidden");
+		return ;
+	}
 	this->fullBody(out, fdo);
 
 	// for (size_t i = 0; i < out.str().size(); i++)
@@ -284,8 +290,14 @@ void Request::post(std::stringstream &out, int fdo)
 	this->res.cType = "text/plain";
 }
 
-void Request::del()
+void Request::del(std::vector<LocationConfig>::iterator &it0)
 {
+	if (std::find(it0->methods.begin(), it0->methods.end(), "DELETE") == it0->methods.end())
+	{
+		this->res.setCode("403");
+		this->res.setMsg("Forbidden");
+		return ;
+	}
 	struct stat sb;
 	this->rpath = "./html/" + this->path;
 	stat(this->rpath.c_str(), &sb);

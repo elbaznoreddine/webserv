@@ -42,5 +42,5 @@ class Request
 		std::string& getStatus();
 		void fullBody(std::stringstream &out, int fdo);
 		void getBoundary();
-		void postAction(std::stringstream &out);
+		void postAction(std::stringstream &out, bool upload);
 };

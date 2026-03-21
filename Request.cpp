@@ -56,28 +56,6 @@ void Request::parseHedear(std::stringstream &ss)
 
 void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std::vector<ServerConfig> &servers)
 {
-
-	for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		for (std::vector<LocationConfig>::iterator it1 = it->locations.begin(); it1 != it->locations.end(); it1++)
-		{
-			// std::cout << "!!!!!!!!!!!!!!!!!\n";
-			// std::cout << "auto index : " << it->autoindex << "\n";
-			// std::cout << "max body size : " << it->client_max_body_size << "\n";
-			// std::cout << "error_pages : " << "\n";
-			// for (std::map<int, std::string>::iterator it2 = it1->error_pages.begin(); it2 != it1->error_pages.end(); it1++)
-			// 	std::cout << it2->first << " :: " << it2->second << "\n";
-			// std::cout << "index_files : " << "\n";
-			// for (std::vector<std::string>::iterator it2 = it1->index_files.begin(); it2 != it1->index_files.end(); it2++)
-			// 	std::cout << *it2 << "\n";
-			// std::cout << "methods : " << "\n";
-			// for (std::vector<std::string>::iterator it2 = it1->methods.begin(); it2 != it1->methods.end(); it2++)
-			// 	std::cout << *it2 << "\n";
-			// std::cout << "root : " << it1->root << "\n";
-			// std::cout << "path : " << it1->path << "\n";
-		}
-	}
-
 	if (!this->parseFirstLine(ss))
 		return ;
 	std::vector<LocationConfig>::iterator it0;
@@ -229,7 +207,7 @@ void Request::getBoundary()
 	this->boundary = "--" + this->boundary;
 }
 
-void  Request::postAction(std::stringstream &out)
+void  Request::postAction(std::stringstream &out, bool upload)
 {
 	std::string line;
 	std::string filename;
@@ -242,7 +220,7 @@ void  Request::postAction(std::stringstream &out)
 			filename = line.substr(line.find("filename") + 10);
 			filename.erase(filename.size() - 2);
 		}
-		else if (line == "\r" && !filename.empty())
+		else if (line == "\r" && !filename.empty() && upload)
 		{
 			std::ofstream output(filename, std::ios::binary);
 			std::stringstream out1;
@@ -268,7 +246,52 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 		this->res.setMsg("Forbidden");
 		return ;
 	}
-	this->fullBody(out, fdo);
+	struct stat sb;
+	this->rpath = it0->root + this->path;
+	stat(this->rpath.c_str(), &sb);
+	switch (sb.st_mode & S_IFMT) {
+		case S_IFDIR:
+			if (this->rpath[this->rpath.size() - 1] != '/')
+			{
+				this->res.setCode("301");
+				this->res.setMsg("Moved Permanently");
+			}
+			else
+			{
+				DIR *dir;
+				dir = opendir(this->rpath.c_str());
+				struct dirent *ent;
+				if (dir)
+				{
+					this->fullBody(out, fdo);
+					this->getBoundary();
+					this->postAction(out, it0->upload_enable);
+					this->res.setCode("200");
+					this->res.setMsg("OK");
+					closedir(dir);
+				}
+			}
+		case S_IFREG:
+			this->fd = open(this->rpath.c_str(), O_RDONLY);
+			if (this->fd == -1)
+			{
+				this->res.setCode("404");
+				this->res.setMsg("Not Found");
+				break;
+			}
+			close(this->fd);
+			this->fullBody(out, fdo);
+			this->getBoundary();
+			this->postAction(out, false);
+			this->res.setCode("200");
+			this->res.setMsg("OK");
+			break;
+		default:
+			this->res.setCode("403");
+			this->res.setMsg("Forbidden");
+	}
+
+	// this->fullBody(out, fdo);
 
 	// for (size_t i = 0; i < out.str().size(); i++)
 	// {
@@ -280,10 +303,10 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 	// 		std::cout << out.str()[i];
 	// }
 
-	this->getBoundary();
-	this->postAction(out);
-	this->res.setCode("200");
-	this->res.setMsg("OK");
+	// this->getBoundary();
+	// this->postAction(out);
+	// this->res.setCode("200");
+	// this->res.setMsg("OK");
 	std::stringstream ss;
 	ss << out.str().size();
 	this->res.cLength = ss.str();
@@ -299,7 +322,7 @@ void Request::del(std::vector<LocationConfig>::iterator &it0)
 		return ;
 	}
 	struct stat sb;
-	this->rpath = "./html/" + this->path;
+	this->rpath = it0->root + this->path;
 	stat(this->rpath.c_str(), &sb);
 	switch (sb.st_mode & S_IFMT) {
 		case S_IFREG:

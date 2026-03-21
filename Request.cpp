@@ -59,25 +59,57 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std
 
 	for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
 	{
-		std::cout << "!!!!!!!!!!!!!!!!!\n";
-		std::cout << "auto index : " << it->autoindex << "\n";
-		it->
-		std::cout << "max body size : " << it->client_max_body_size << "\n";
-		std::cout << "error_pages : " << "\n";
-		for (std::map<int, std::string>::iterator it1 = it->error_pages.begin(); it1 != it->error_pages.end(); it1++)
-			std::cout << it1->first << " :: " << it1->second << "\n";
+		for (std::vector<LocationConfig>::iterator it1 = it->locations.begin(); it1 != it->locations.end(); it1++)
+		{
+			// std::cout << "!!!!!!!!!!!!!!!!!\n";
+			// std::cout << "auto index : " << it->autoindex << "\n";
+			// std::cout << "max body size : " << it->client_max_body_size << "\n";
+			// std::cout << "error_pages : " << "\n";
+			// for (std::map<int, std::string>::iterator it2 = it1->error_pages.begin(); it2 != it1->error_pages.end(); it1++)
+			// 	std::cout << it2->first << " :: " << it2->second << "\n";
+			// std::cout << "index_files : " << "\n";
+			// for (std::vector<std::string>::iterator it2 = it1->index_files.begin(); it2 != it1->index_files.end(); it2++)
+			// 	std::cout << *it2 << "\n";
+			// std::cout << "methods : " << "\n";
+			// for (std::vector<std::string>::iterator it2 = it1->methods.begin(); it2 != it1->methods.end(); it2++)
+			// 	std::cout << *it2 << "\n";
+			// std::cout << "root : " << it1->root << "\n";
+			// std::cout << "path : " << it1->path << "\n";
+		}
 	}
-	exit(10);
 
 	if (!this->parseFirstLine(ss))
 		return ;
-	this->parseHedear(ss);
-	if (this->method == "GET")
-		get();
-	if (this->method == "DELETE")
-		del();
-	if (this->method == "POST")
-		post(out, fdo);
+	std::vector<LocationConfig>::iterator it0;
+	std::vector<ServerConfig>::iterator it = servers.begin();
+	for (it; it != servers.end(); it++)
+	{
+		std::vector<LocationConfig>::iterator it1 = it->locations.begin();
+		it0 = it->locations.end();
+		for (it1; it1 != it->locations.end(); it1++)
+		{
+			if (this->path.find(it1->path) != std::string::npos)
+			{
+				it0 = it1;
+				break;
+			}
+		}	
+	}
+	if (it0 == it->locations.end())
+	{
+		this->res.setCode("404");
+		this->res.setMsg("Not Found");
+	}
+	else
+	{
+		this->parseHedear(ss);
+		if (this->method == "GET")
+			get(it0);
+		if (this->method == "DELETE")
+			del();
+		if (this->method == "POST")
+			post(out, fdo);
+	}
 	this->res.setMethod(this->method);
 	this->res.setPath(this->path);
 	this->res.setRpath(this->rpath);
@@ -90,10 +122,16 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std
 	return ;
 }
 
-void Request::get()
+void Request::get(std::vector<LocationConfig>::iterator &it0)
 {
+	if (std::find(it0->methods.begin(), it0->methods.end(), "GET") == it0->methods.end())
+	{
+		this->res.setCode("403");
+		this->res.setMsg("Forbidden");
+		return ;
+	}
 	struct stat sb;
-	this->rpath = "./html/" + this->path;
+	this->rpath = it0->root + this->path;
 	stat(this->rpath.c_str(), &sb);
 	switch (sb.st_mode & S_IFMT) {
 		case S_IFDIR:
@@ -102,13 +140,24 @@ void Request::get()
 				this->res.setCode("301");
 				this->res.setMsg("Moved Permanently");
 			}
-			else if (this->index)
+			else if (it0->index_files.size() > 0)
 			{
-				this->path = "index.html";
-				this->get();
+				for (std::vector<std::string>::iterator itf = it0->index_files.begin(); itf != it0->index_files.end(); itf++)
+				{
+					std::string file = it0->root + "/" + *itf;
+					int fdf = open(file.c_str(), O_RDONLY);
+					if (fdf > 0)
+					{
+						close(fd);
+						this->path = "/" + *itf;
+						this->get(it0);
+						return ;
+					}
+				}
 			}
-			else if (this->autoIndex)
+			else if (it0->autoindex)
 			{
+				this->autoIndex = true;
 				DIR *dir;
 				dir = opendir(this->rpath.c_str());
 				struct dirent *ent;

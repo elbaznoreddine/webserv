@@ -32,7 +32,7 @@ class Request
 		Response res;
 		Request();
 		~Request();
-		void get();
+		void get(std::vector<LocationConfig>::iterator &it0);
 		void post(std::stringstream &out, int fdo);
 		void del();
 		void parser(std::stringstream &ss, std::stringstream &out, int fdo, std::vector<ServerConfig> &servers);

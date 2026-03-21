@@ -211,6 +211,7 @@ void  Request::postAction(std::stringstream &out, bool upload)
 {
 	std::string line;
 	std::string filename;
+	std::map<std::string, std::string> bmap;
 	while (std::getline(out, line))
 	{
 		if (line.find(this->boundary + "--\r") != std::string::npos || line.empty())
@@ -219,6 +220,20 @@ void  Request::postAction(std::stringstream &out, bool upload)
 		{
 			filename = line.substr(line.find("filename") + 10);
 			filename.erase(filename.size() - 2);
+		}
+		else if (line.find("name") != std::string::npos && line.find("filename") == std::string::npos)
+		{
+			std::string key;
+			key = line.substr(line.find("name") + 6);
+			key.erase(key.size() - 2);
+			std::getline(out, line);
+			std::getline(out, line);
+			if (line != "\r")
+				line.erase(line.size() - 1);
+			else
+				line = "";
+			std::string val = line;
+			map.insert(std::make_pair(key, val));
 		}
 		else if (line == "\r" && !filename.empty() && upload)
 		{
@@ -246,6 +261,7 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 		this->res.setMsg("Forbidden");
 		return ;
 	}
+
 	struct stat sb;
 	this->rpath = it0->root + this->path;
 	stat(this->rpath.c_str(), &sb);
@@ -290,23 +306,6 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 			this->res.setCode("403");
 			this->res.setMsg("Forbidden");
 	}
-
-	// this->fullBody(out, fdo);
-
-	// for (size_t i = 0; i < out.str().size(); i++)
-	// {
-	// 	if (out.str()[i] == '\r')
-	// 		std::cout << "\\r";
-	// 	else if (out.str()[i] == '\n')
-	// 		std::cout << "\\n\n";
-	// 	else
-	// 		std::cout << out.str()[i];
-	// }
-
-	// this->getBoundary();
-	// this->postAction(out);
-	// this->res.setCode("200");
-	// this->res.setMsg("OK");
 	std::stringstream ss;
 	ss << out.str().size();
 	this->res.cLength = ss.str();

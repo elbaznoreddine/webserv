@@ -14,15 +14,16 @@ function getCookie(name){
 }
 
 window.onload = function(){
-    if(getCookie("login")){
+    if(getCookie("sid")){
         window.location = "home.html";
     }
 }
 
 function login(){
-    let sid = Math.floor(Math.random()*1000000);
+    // let sid = Math.floor(Math.random()*1000000);
 
-    document.cookie = "sid=" + sid + "; path=/";
+    // document.cookie = "sid=" + sid + "; path=/";
+    document.cookie = "login=1" + "; path=/";
 
     window.location = "home.html";
 }

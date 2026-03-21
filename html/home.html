@@ -15,12 +15,12 @@ function getCookie(name){
 
 window.onload = function(){
 
-    let sid = getCookie("login");
+    let sid = getCookie("sid");
 
     if(!sid){
         window.location = "login.html";
     }else{
-        document.getElementById("login").innerText = sid;
+        document.getElementById("sid").innerText = sid;
     }
 }
 

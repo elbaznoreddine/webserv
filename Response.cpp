@@ -40,7 +40,7 @@ void Response::readFile(std::string &data)
 
 void Response::make_res(std::vector<LocationConfig>::iterator &it0)
 {
-	std::string data1;
+	std::string data1 = "";
 	this->res = this->protocol + " " + this->code + " " + this->msg + "\r\n";
 	if (!this->location.empty())
 		this->res += "Location: " + this->location + "\r\n";
@@ -68,7 +68,7 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0)
 		ss << data1.length();
 		this->cLength = ss.str();
 	}
-	if (this->method != "DELETE")
+	if (this->method == "GET")
 	{
 		this->res += "Content-Type: " + this->cType + "\r\n";
 		this->res += "Content-Length: " + this->cLength + "\r\n";
@@ -76,9 +76,8 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0)
 	this->Cookie();
 	this->res += "Connection: close\r\n";
 	this->res +=  "\r\n";
-	if (this->method == "DELETE" || this->method == "POST")
-		this->res += '\0';
-	this->res +=  data1;
+	if (!data1.empty())
+		this->res +=  data1;
 }
 
 void Response::Cookie()

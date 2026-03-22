@@ -5,6 +5,7 @@ Response::Response()
 {
 	this->protocol = "HTTP/1.0";
 	this->server = "webserv";
+	this->cLength = "0";
 }
 
 Response::~Response()
@@ -68,11 +69,11 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0)
 		ss << data1.length();
 		this->cLength = ss.str();
 	}
+	if (this->method == "POST")
+		this->cLength = "0";
 	if (this->method == "GET")
-	{
 		this->res += "Content-Type: " + this->cType + "\r\n";
-		this->res += "Content-Length: " + this->cLength + "\r\n";
-	}
+	this->res += "Content-Length: " + this->cLength + "\r\n";
 	this->Cookie();
 	this->res += "Connection: close\r\n";
 	this->res +=  "\r\n";

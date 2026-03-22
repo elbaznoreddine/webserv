@@ -290,12 +290,12 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 		this->res.setMsg("Forbidden");
 		return ;
 	}
-	if (std::atof(itm->second.c_str()) > std::atof(it0->client_max_body_size.c_str()))
-	{
-		this->res.setCode("413");
-		this->res.setMsg("Request Entity Too Large");
-		return ;
-	}
+	// if (std::atof(itm->second.c_str()) > std::atof(it0->client_max_body_size.c_str()))
+	// {
+	// 	this->res.setCode("413");
+	// 	this->res.setMsg("Request Entity Too Large");
+	// 	return ;
+	// }
 
 	struct stat sb;
 	this->rpath = this->path;

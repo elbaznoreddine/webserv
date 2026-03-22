@@ -38,10 +38,12 @@ void Response::readFile(std::string &data)
 	this->cLength = ss.str();
 }
 
-void Response::make_res()
+void Response::make_res(std::vector<LocationConfig>::iterator &it0)
 {
 	std::string data1;
 	this->res = this->protocol + " " + this->code + " " + this->msg + "\r\n";
+	if (!this->location.empty())
+		this->res += "Location: " + this->location + "\r\n";
 	this->res += "Server: " + this->server + "\r\n";
 	if (this->method == "GET" && this->code == "200")
 	{
@@ -53,7 +55,15 @@ void Response::make_res()
 	else if (this->code != "200")
 	{
 		this->cType = "text/html";
-		data1 = this->htmlPage();
+		std::map<int, std::string>::iterator itm = it0->error_pages.find(std::atoi(this->code.c_str()));
+		if (itm != it0->error_pages.end())
+		{
+			std::ifstream inp(itm->second.c_str(), std::ios::binary);
+			std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
+			data1 = file;
+		}
+		else
+			data1 = this->htmlPage();
 		std::stringstream ss;
 		ss << data1.length();
 		this->cLength = ss.str();
@@ -156,4 +166,9 @@ std::string Response::getRes()
 std::string& Response::getStatus()
 {
 	return this->code;
+}
+
+void Response::setRedirect(std::string &loc)
+{
+	this->location = loc;
 }

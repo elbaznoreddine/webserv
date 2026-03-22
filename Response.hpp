@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include "headers/LocationConfig.hpp"
 
 class Response
 {
@@ -25,10 +26,11 @@ class Response
 		std::map<std::string, std::string> map;
 		bool index;
 		bool autoIndex;
+		std::string location;
 	public:	
 		Response();
 		~Response();
-		void make_res();
+		void make_res(std::vector<LocationConfig>::iterator &it0);
 		std::string htmlPage();
 		void setCode(std::string str);
 		void setMsg(std::string str);
@@ -46,4 +48,5 @@ class Response
 		void autoIndexFun(std::string &data);
 		void readFile(std::string &data);
 		std::string& getStatus();
+		void setRedirect(std::string &loc);
 };

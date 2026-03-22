@@ -1,0 +1,11 @@
+location /oldpath {
+    return 302 /newpath;
+}
+
+HTTP/1.0 301 Moved Permanently
+Location: http://newsite.com/newpath
+
+
+error pages 
+
+cgi 

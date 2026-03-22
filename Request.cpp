@@ -13,7 +13,7 @@ Request::~Request()
 
 }
 
-bool Request::parseFirstLine(std::stringstream &ss)
+bool Request::parseFirstLine(std::stringstream &ss, std::vector<LocationConfig>::iterator &it0)
 {
 	std::string line;
 	std::getline(ss, line);
@@ -29,7 +29,7 @@ bool Request::parseFirstLine(std::stringstream &ss)
 	{
 		this->res.setCode("400");
 		this->res.setMsg("Bad Request");
-		this->res.make_res();
+		this->res.make_res(it0);
 		return false;
 	}
 	this->method = this->vec[0];
@@ -56,9 +56,9 @@ void Request::parseHedear(std::stringstream &ss)
 
 void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std::vector<ServerConfig> &servers)
 {
-	if (!this->parseFirstLine(ss))
+	std::vector<LocationConfig>::iterator it0 = servers.begin()->locations.begin();
+	if (!this->parseFirstLine(ss, it0))
 		return ;
-	std::vector<LocationConfig>::iterator it0;
 	std::vector<ServerConfig>::iterator it = servers.begin();
 	for (it; it != servers.end(); it++)
 	{
@@ -71,16 +71,35 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std
 				it0 = it1;
 				break;
 			}
-		}	
+		}
+		it1 = it->locations.begin();
+		for (it1; it1 != it->locations.end(); it1++)
+		{
+			if (it1->path.size() != 1 && this->path.find(it1->path) != std::string::npos)
+			{
+				it0 = it1;
+				break;
+			}
+		}
 	}
 	if (it0 == it->locations.end())
 	{
 		this->res.setCode("404");
 		this->res.setMsg("Not Found");
 	}
+	else if (!it0->redirect.empty())
+	{
+		std::stringstream code;
+		code << it0->redirect_code;
+		this->res.setCode(code.str());
+		this->res.setMsg("Moved Permanently");
+		this->res.setRedirect(it0->redirect);
+	}
 	else
 	{
 		this->parseHedear(ss);
+		if (this->path.find(it0->path) != std::string::npos)
+			this->path.replace(this->path.find(it0->path), it0->path.size(), it0->root + "/");
 		if (this->method == "GET")
 			get(it0);
 		if (this->method == "DELETE")
@@ -96,7 +115,7 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std
 	this->res.setAutoIndex(this->autoIndex);
 	this->res.setBody(this->body);
 	this->res.setMap(this->map);
-	this->res.make_res();
+	this->res.make_res(it0);
 	return ;
 }
 
@@ -109,7 +128,7 @@ void Request::get(std::vector<LocationConfig>::iterator &it0)
 		return ;
 	}
 	struct stat sb;
-	this->rpath = it0->root + this->path;
+	this->rpath = this->path;
 	stat(this->rpath.c_str(), &sb);
 	switch (sb.st_mode & S_IFMT) {
 		case S_IFDIR:
@@ -128,7 +147,9 @@ void Request::get(std::vector<LocationConfig>::iterator &it0)
 					{
 						close(fd);
 						this->path = "/" + *itf;
-						this->get(it0);
+						this->rpath = file;
+						this->res.setCode("200");
+						this->res.setMsg("OK");
 						return ;
 					}
 				}
@@ -262,8 +283,22 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 		return ;
 	}
 
+	std::map<std::string, std::string>::iterator itm = this->map.find("Content-Length");
+	if (itm == this->map.end())
+	{
+		this->res.setCode("403");
+		this->res.setMsg("Forbidden");
+		return ;
+	}
+	if (std::atof(itm->second.c_str()) > std::atof(it0->client_max_body_size.c_str()))
+	{
+		this->res.setCode("413");
+		this->res.setMsg("Request Entity Too Large");
+		return ;
+	}
+
 	struct stat sb;
-	this->rpath = it0->root + this->path;
+	this->rpath = this->path;
 	stat(this->rpath.c_str(), &sb);
 	switch (sb.st_mode & S_IFMT) {
 		case S_IFDIR:
@@ -321,7 +356,7 @@ void Request::del(std::vector<LocationConfig>::iterator &it0)
 		return ;
 	}
 	struct stat sb;
-	this->rpath = it0->root + this->path;
+	this->rpath = this->path;
 	stat(this->rpath.c_str(), &sb);
 	switch (sb.st_mode & S_IFMT) {
 		case S_IFREG:

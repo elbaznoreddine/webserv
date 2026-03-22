@@ -147,22 +147,6 @@ void Server::startServers()
 						bytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 					}
 					req.parser(ss, out, fd, servers);
-                    // while (true)
-                    // {
-                    //     if (str1.size() == 0)
-                    //         break ;
-                    //     if (str1.size() > 1000000)
-                    //     {
-                    //         str = str1.substr(0, 1000000);
-                    //         str1.erase(0, 1000000);
-                    //     }
-                    //     else
-                    //     {
-                    //         str = str1;
-                    //         str1.erase(0, str1.size());
-                    //     }
-                    //     send(fd, str.c_str(), str.size(), 0);
-                    // }
                     client.lastActivity = now;
 					client.writeBuffer.append(req.res.getRes());
 					client.state = Client::WRITING;

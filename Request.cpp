@@ -141,11 +141,11 @@ void Request::get(std::vector<LocationConfig>::iterator &it0)
 			{
 				for (std::vector<std::string>::iterator itf = it0->index_files.begin(); itf != it0->index_files.end(); itf++)
 				{
-					std::string file = it0->root + "/" + *itf;
+					std::string file = this->path + "/" + *itf;
 					int fdf = open(file.c_str(), O_RDONLY);
 					if (fdf > 0)
 					{
-						close(fd);
+						close(fdf);
 						this->path = "/" + *itf;
 						this->rpath = file;
 						this->res.setCode("200");
@@ -153,6 +153,8 @@ void Request::get(std::vector<LocationConfig>::iterator &it0)
 						return ;
 					}
 				}
+				this->res.setCode("403");
+				this->res.setMsg("Forbidden");
 			}
 			else if (it0->autoindex)
 			{

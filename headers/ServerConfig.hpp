@@ -17,6 +17,7 @@ public:
     // int port;
     // std::string host;
 	std::vector<Listen> all_listen;
+	std::vector<std::string> hosts;
     std::string root;
     std::vector<std::string> index_files;
     bool autoindex;

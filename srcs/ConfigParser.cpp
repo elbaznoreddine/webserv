@@ -161,6 +161,9 @@ void ConfigParser::parse_directive(const std::string& line, ServerConfig& config
             throw std::runtime_error("listen directive: invalid port number: " + value);
 
         config.addListen(host, port);
+		std::stringstream ss;
+		ss << port;
+		config.hosts.push_back(host+":"+ss.str());
     }
     else if (directive == "root")
     {

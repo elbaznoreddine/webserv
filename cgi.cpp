@@ -12,10 +12,13 @@ enum CgiError {
     CGI_EXIT_ERROR  = -5,
 };
 
-std::string getInterpreter(const std::string &path)
+std::string getInterpreter(std::string path, LocationConfig &cigLocation)
 {
-    if (path.rfind(".py")  == path.size() - 3) return "/usr/bin/python3";
-    if (path.rfind(".php") == path.size() - 4) return "/usr/bin/php";
+	std::map<std::string, std::string> cgi = cigLocation.getCgiHandlers();
+    if ((path.rfind(".py")  == path.size() - 3))
+		return "/usr/bin/python3";
+    if (path.rfind(".php") == path.size() - 4)
+		return "/usr/bin/php";
     return "";
 }
 
@@ -40,9 +43,6 @@ char **buildEnv(Request &req)
     env.push_back("SCRIPT_FILENAME=." + scriptName);
     env.push_back("SERVER_PROTOCOL="  + req.protocol);
     env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    env.push_back("SERVER_NAME=" + req.map["ila kan"]);
-    env.push_back("SERVER_PORT=" + req.map["ila kan"]);
-    env.push_back("PATH_INFO=");
     env.push_back("REDIRECT_STATUS=200");
     env.push_back("REQUEST_URI="      + req.path);
     env.push_back("DOCUMENT_ROOT=.");
@@ -74,23 +74,23 @@ void debugCgi(const std::string &full_path, char **env,
     std::cerr << "========A FRANI=======" << std::endl;
 }
 
-static std::string makeErrorResponse(int httpStatus, std::string title, std::string detail)
-{
-    std::string body =
-        "<html><head><title>" + title + "</title></head>"
-        "<body><h1>" + title + "</h1><p>" + detail + "</p></body></html>";
-	std::stringstream ss;
-	ss << httpStatus;
-	std::stringstream s;
-	s << body.size();
-    std::string response =
-        "HTTP/1.1 " + ss.str() + " " + title + "\r\n"
-        "Content-Type: text/html\r\n"
-        "Content-Length: " + s.str() + "\r\n"
-        "Connection: close\r\n\r\n" + body;
+// static std::string makeErrorResponse(int httpStatus, std::string title, std::string detail)
+// {
+//     std::string body =
+//         "<html><head><title>" + title + "</title></head>"
+//         "<body><h1>" + title + "</h1><p>" + detail + "</p></body></html>";
+// 	std::stringstream ss;
+// 	ss << httpStatus;
+// 	std::stringstream s;
+// 	s << body.size();
+//     std::string response =
+//         "HTTP/1.1 " + ss.str() + " " + title + "\r\n"
+//         "Content-Type: text/html\r\n"
+//         "Content-Length: " + s.str() + "\r\n"
+//         "Connection: close\r\n\r\n" + body;
 
-    return response;
-}
+//     return response;
+// }
 
 static std::string cgiErrorResponse(int cgiErr, int exitCode = 0)
 {
@@ -99,33 +99,33 @@ static std::string cgiErrorResponse(int cgiErr, int exitCode = 0)
     {
         case CGI_TIMEOUT:
             std::cerr << "[CGI] Error: script timed out (>" << TIME_OUT << "s)\n";
-            return makeErrorResponse(504, "Gateway Timeout",
-                                     "The CGI script did not respond in time.");
+            // 504 Gateway Timeout
+			return "";
 
         case CGI_EXECVE_FAIL:
             std::cerr << "[CGI] Error: execve() failed – bad interpreter or script path\n";
-            return makeErrorResponse(500, "Internal Server Error",
-                                     "CGI execution failed: interpreter or script not found.");
+            //  500 Internal Server Error
+			return "";
 
         case CGI_FORK_FAIL:
             std::cerr << "[CGI] Error: fork() failed – " << strerror(errno) << "\n";
-            return makeErrorResponse(500, "Internal Server Error",
-                                     "Server could not spawn CGI process.");
+            // 500 Internal Server Error
+			return "";
 
         case CGI_PIPE_FAIL:
             std::cerr << "[CGI] Error: pipe() failed – " << strerror(errno) << "\n";
-            return makeErrorResponse(500, "Internal Server Error",
-                                     "Server could not create CGI pipes.");
+            // 500 Internal Server Error
+			return "";
 
         case CGI_EXIT_ERROR:
 			ss << exitCode;
             std::cerr << "[CGI] Error: script exited with code " << exitCode << "\n";
-            return makeErrorResponse(500, "Internal Server Error",
-                                     "CGI script exited with error code "
-                                     + ss.str() + ".");
+            // 500 Internal Server Error
+			return "";
 
         default:
-            return makeErrorResponse(500, "Internal Server Error", "Unknown CGI error.");
+            //500 Internal Server Error Unknown CGI error
+			return "";
     }
 }
 
@@ -164,7 +164,8 @@ std::string cgiHandler(std::string full_path, char **env,
             (char *)full_path.c_str(),
             NULL
         };
-        execve(interpreter.c_str(), args, env);
+        if (execve(interpreter.c_str(), args, env) < 0)
+			cgiErrorResponse(CGI_EXECVE_FAIL);
     	exit(1);
     }
 
@@ -227,5 +228,5 @@ std::string cgiHandler(std::string full_path, char **env,
     if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
         return cgiErrorResponse(CGI_EXIT_ERROR, WEXITSTATUS(status));
 
-    return "HTTP/1.1 200 OK\r\nConnection: close\r\n" + out;
+    return out;
 }

@@ -1,5 +1,5 @@
 #pragma once
-
+#include "ServerConfig.hpp"
 #include <string>
 #include <ctime>
 
@@ -10,6 +10,7 @@ public:
 
     // std::string readBuffer;
     std::string writeBuffer;
+	ServerConfig server;
 
     size_t bytesSent;
     time_t lastActivity;

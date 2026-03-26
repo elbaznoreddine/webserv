@@ -100,13 +100,32 @@ void Server::startServers()
 
                     clients[client_fd] = Client(client_fd);
 
-                    std::cout << "New client connected: fd="
-                              << client_fd
-                              << " from "
-                              << inet_ntoa(client_addr.sin_addr)
-                              << ":"
-                              << ntohs(client_addr.sin_port)
-                              << std::endl;
+                    sockaddr_in local_addr;
+					socklen_t local_len = sizeof(local_addr);
+
+					getsockname(client_fd, (sockaddr*)&local_addr, &local_len);
+
+					char local_ip[INET_ADDRSTRLEN];
+					inet_ntop(AF_INET, &local_addr.sin_addr, local_ip, sizeof(local_ip));
+
+					std::stringstream ss, s;
+					ss << local_ip;
+					s << ntohs(local_addr.sin_port);
+					std::string host = ss.str() + ":" + s.str();
+					std::cout << "Server: "
+							<< host
+							<< std::endl;
+					for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
+					{
+						if (std::find(it->hosts.begin(), it->hosts.end(), host) != it->hosts.end())
+							clients[client_fd].server = *it;
+						else
+						{
+							host = "0.0.0.0:" + s.str();
+							if (std::find(it->hosts.begin(), it->hosts.end(), host) != it->hosts.end())
+								clients[client_fd].server = *it;
+						}
+					}
                 }
             }
             else
@@ -146,7 +165,7 @@ void Server::startServers()
 						}
 						bytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 					}
-					req.parser(ss, out, fd, servers);
+					req.parser(ss, out, fd, client.server);
                     client.lastActivity = now;
 					client.writeBuffer.append(req.res.getRes());
 					client.state = Client::WRITING;

@@ -150,6 +150,10 @@ std::string Response::getType(std::string& str)
 {
 	if (str.find(".html") != std::string::npos)
 		return "text/html";
+	if (str.find(".pdf") != std::string::npos)
+		return "application/pdf";
+	if (str.find(".mp4") != std::string::npos)
+		return "video/mp4";
 	return "text/plain";
 }
 

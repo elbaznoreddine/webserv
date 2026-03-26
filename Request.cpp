@@ -153,8 +153,8 @@ void Request::get(std::vector<LocationConfig>::iterator &it0)
 						return ;
 					}
 				}
-				this->res.setCode("403");
-				this->res.setMsg("Forbidden");
+				this->res.setCode("404");
+				this->res.setMsg("Not Found");
 			}
 			else if (it0->autoindex)
 			{
@@ -256,7 +256,7 @@ void  Request::postAction(std::stringstream &out, bool upload)
 			else
 				line = "";
 			std::string val = line;
-			map.insert(std::make_pair(key, val));
+			bmap.insert(std::make_pair(key, val));
 		}
 		else if (line == "\r" && !filename.empty() && upload)
 		{

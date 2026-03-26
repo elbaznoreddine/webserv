@@ -99,8 +99,15 @@ small{
 <form action="/" method="POST" enctype="multipart/form-data">
 
 <div class="input-group">
-<small>Select file</small>
-<input class="file-input" type="file" name="file">
+<input type="text" name="username" placeholder="Username">
+</div>
+
+<div class="input-group">
+<input type="email" name="email" placeholder="Email">
+</div>
+
+<div class="input-group">
+<textarea name="message" placeholder="Message"></textarea>
 </div>
 
 <button type="submit">Send Data</button>

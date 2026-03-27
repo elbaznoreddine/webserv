@@ -13,4 +13,4 @@ enum CgiError {
 std::string getInterpreter(std::string path, LocationConfig &cigLocation);
 char **buildEnv(Request &req);
 void freeEnv(char **envp);
-std::string cgiHandler(std::string full_path, char **env, std::string interpreter, std::string post_body);
+std::string cgiHandler(std::string full_path, char **env, std::string interpreter, std::string post_body, Request &req);

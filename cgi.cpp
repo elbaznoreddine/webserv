@@ -4,8 +4,6 @@
 #include "cgi.hpp"
 #define TIME_OUT 5
 
-
-
 std::string getInterpreter(std::string path, LocationConfig &cigLocation)
 {
 	std::map<std::string, std::string> cgi = cigLocation.getCgiHandlers();
@@ -14,11 +12,6 @@ std::string getInterpreter(std::string path, LocationConfig &cigLocation)
     if ((path.rfind(".php") == path.size() - 4) && (cgi.find(".php") != cgi.end()))
 		return "/usr/bin/php";
     return "";
-}
-
-bool isCgi(const std::string &path)
-{
-    return path.find("/cgi-bin/") == 0;
 }
 
 char **buildEnv(Request &req)
@@ -32,7 +25,7 @@ char **buildEnv(Request &req)
     env.push_back("REQUEST_METHOD="   + req.method);
     env.push_back("CONTENT_LENGTH="   + req.map["Content-Length"]);
     env.push_back("CONTENT_TYPE="     + req.map["Content-Type"]);
-    env.push_back("QUERY_STRING="     + req.map["Query-String"]);
+    env.push_back("QUERY_STRING="     + req.map["QUERY_STRING"]);
     env.push_back("SCRIPT_NAME="      + scriptName);
     env.push_back("SCRIPT_FILENAME=." + scriptName);
     env.push_back("SERVER_PROTOCOL="  + req.protocol);
@@ -55,84 +48,49 @@ void freeEnv(char **envp)
     delete[] envp;
 }
 
-void debugCgi(const std::string &full_path, char **env,
-              const std::string &interpreter, const std::string &post_body)
-{
-    std::cerr << "=== SUUUUUUUUUUUU ===" << std::endl;
-    std::cerr << "interpreter : " << interpreter    << std::endl;
-    std::cerr << "script path : " << full_path      << std::endl;
-    std::cerr << "post body   : [" << post_body << "]" << std::endl;
-    std::cerr << "env vars    :" << std::endl;
-    for (int i = 0; env[i]; i++)
-        std::cerr << "  " << env[i] << std::endl;
-    std::cerr << "========A FRANI=======" << std::endl;
-}
-
-// static std::string makeErrorResponse(int httpStatus, std::string title, std::string detail)
-// {
-//     std::string body =
-//         "<html><head><title>" + title + "</title></head>"
-//         "<body><h1>" + title + "</h1><p>" + detail + "</p></body></html>";
-// 	std::stringstream ss;
-// 	ss << httpStatus;
-// 	std::stringstream s;
-// 	s << body.size();
-//     std::string response =
-//         "HTTP/1.1 " + ss.str() + " " + title + "\r\n"
-//         "Content-Type: text/html\r\n"
-//         "Content-Length: " + s.str() + "\r\n"
-//         "Connection: close\r\n\r\n" + body;
-
-//     return response;
-// }
-
-static std::string cgiErrorResponse(int cgiErr, int exitCode = 0)
+static std::string cgiErrorResponse(int cgiErr, Request &req)
 {
 	std::stringstream ss;
     switch (cgiErr)
     {
         case CGI_TIMEOUT:
-            std::cerr << "[CGI] Error: script timed out (>" << TIME_OUT << "s)\n";
-            // 504 Gateway Timeout
+            req.res.setCode("504");
+            req.res.setMsg("Gateway Timeout");
 			return "";
 
         case CGI_EXECVE_FAIL:
-            std::cerr << "[CGI] Error: execve() failed – bad interpreter or script path\n";
-            //  500 Internal Server Error
+            req.res.setCode("500");
+            req.res.setMsg("Internal Server Error");
 			return "";
 
         case CGI_FORK_FAIL:
-            std::cerr << "[CGI] Error: fork() failed – " << strerror(errno) << "\n";
-            // 500 Internal Server Error
-			return "";
+            req.res.setCode("500");
+            req.res.setMsg("Internal Server Error");
+            return "";
 
         case CGI_PIPE_FAIL:
-            std::cerr << "[CGI] Error: pipe() failed – " << strerror(errno) << "\n";
-            // 500 Internal Server Error
-			return "";
+            req.res.setCode("500");
+            req.res.setMsg("Internal Server Error");
+            return "";
 
         case CGI_EXIT_ERROR:
-			ss << exitCode;
-            std::cerr << "[CGI] Error: script exited with code " << exitCode << "\n";
-            // 500 Internal Server Error
-			return "";
-
+            req.res.setCode("500");
+            req.res.setMsg("Internal Server Error");
+            return "";
         default:
-            //500 Internal Server Error Unknown CGI error
-			return "";
+            req.res.setCode("500");
+            req.res.setMsg("Internal Server Error");
+            return "";
     }
 }
 
-std::string cgiHandler(std::string full_path, char **env,
-                       std::string interpreter, std::string post_body)
+std::string cgiHandler(std::string full_path, char **env, std::string interpreter, std::string post_body, Request &req)
 {
-    debugCgi(full_path, env, interpreter, post_body);
-
     int stdin_pipe[2];
     int stdout_pipe[2];
 
     if (pipe(stdin_pipe) < 0 || pipe(stdout_pipe) < 0)
-        return cgiErrorResponse(CGI_PIPE_FAIL);
+        return cgiErrorResponse(CGI_PIPE_FAIL, req);
 
     pid_t pid = fork();
     if (pid < 0)
@@ -141,7 +99,7 @@ std::string cgiHandler(std::string full_path, char **env,
 		close(stdin_pipe[1]);
         close(stdout_pipe[0]);
 		close(stdout_pipe[1]);
-        return cgiErrorResponse(CGI_FORK_FAIL);
+        return cgiErrorResponse(CGI_FORK_FAIL, req);
     }
 
     if (pid == 0)
@@ -159,7 +117,7 @@ std::string cgiHandler(std::string full_path, char **env,
             NULL
         };
         if (execve(interpreter.c_str(), args, env) < 0)
-			cgiErrorResponse(CGI_EXECVE_FAIL);
+			return cgiErrorResponse(CGI_EXECVE_FAIL, req);
     	exit(1);
     }
 
@@ -217,10 +175,9 @@ std::string cgiHandler(std::string full_path, char **env,
     close(stdout_pipe[0]);
 
     if (timed_out)
-        return cgiErrorResponse(CGI_TIMEOUT);
+        return cgiErrorResponse(CGI_TIMEOUT, req);
 
     if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-        return cgiErrorResponse(CGI_EXIT_ERROR, WEXITSTATUS(status));
-
+        return cgiErrorResponse(CGI_EXIT_ERROR, req);
     return out;
 }

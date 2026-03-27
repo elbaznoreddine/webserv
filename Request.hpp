@@ -29,7 +29,9 @@ class Request
 		std::string boundary;
 		bool index;
 		bool autoIndex;
+		bool iscgi;
 		int fd;
+		std::string cgistr;
 	public:
 		Response res;
 		Request();

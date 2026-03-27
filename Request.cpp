@@ -1,12 +1,14 @@
 #include "Request.hpp"
 #include "headers/Server.hpp"
 #include "Response.hpp"
+#include "cgi.hpp"
 
 Request::Request()
 {
 	this->autoIndex = false;
 	this->index = false;
 	this->fd = 0;
+	this->iscgi = false;
 }
 
 Request::~Request()
@@ -125,6 +127,7 @@ void Request::get(std::vector<LocationConfig>::iterator &it0)
 		this->res.setMsg("Forbidden");
 		return ;
 	}
+	std::string inter;
 	struct stat sb;
 	this->rpath = this->path;
 	stat(this->rpath.c_str(), &sb);
@@ -188,8 +191,19 @@ void Request::get(std::vector<LocationConfig>::iterator &it0)
 				break;
 			}
 			close(this->fd);
-			this->res.setCode("200");
-			this->res.setMsg("OK");
+			inter = getInterpreter(this->rpath, *it0);
+			if (!inter.empty())
+			{
+				this->res.setCode("200");
+				this->res.setMsg("OK");
+				this->iscgi = true;
+				this->cgistr = cgiHandler(this->rpath, buildEnv(*this), inter, "", *this);
+			}
+			else
+			{
+				this->res.setCode("200");
+				this->res.setMsg("OK");
+			}
 			break;
 		default:
 			if (errno == 2)
@@ -297,6 +311,7 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 		return ;
 	}
 
+	std::string inter;
 	struct stat sb;
 	this->rpath = this->path;
 	stat(this->rpath.c_str(), &sb);
@@ -333,8 +348,22 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 			this->fullBody(out, fdo);
 			this->getBoundary();
 			this->postAction(out, false);
-			this->res.setCode("200");
-			this->res.setMsg("OK");
+			inter = getInterpreter(this->rpath, *it0);
+			if (!inter.empty())
+			{
+				this->res.setCode("200");
+				this->res.setMsg("OK");
+				this->iscgi = true;
+				std::string b;
+				for (std::map<std::string, std::string>::iterator it = this->querys.begin(); it != this->querys.end(); it++)
+				{
+					b += it->first;
+					b += "=";
+					b += it->second;
+					b += "&";
+				}
+				this->cgistr = cgiHandler(this->rpath, buildEnv(*this), inter, b, *this);
+			}
 			break;
 		default:
 			this->res.setCode("403");

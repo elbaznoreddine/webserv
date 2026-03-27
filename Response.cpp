@@ -4,7 +4,6 @@
 
 Response::Response()
 {
-	// this->protocol = "HTTP/1.0";
 	this->server = "webserv";
 	this->cLength = "0";
 }
@@ -32,18 +31,10 @@ void Response::autoIndexFun(std::string &data, Request& req)
 
 void Response::readFile(std::string &data, Request& req)
 {
-	// if (find cgi && cgi)
-	// {
-	// 	data = fun();
-
-	// }
-	// else
-	// {
-		std::ifstream inp(req.rpath.c_str(), std::ios::binary);
-		std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
-		data = file;
-		this->cType = this->getType(req.path);
-	// }
+	std::ifstream inp(req.rpath.c_str(), std::ios::binary);
+	std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
+	data = file;
+	this->cType = this->getType(req.path);
 	std::stringstream ss;
 	ss << data.length();
 	this->cLength = ss.str();
@@ -60,6 +51,14 @@ void Response::make_res(ServerConfig &server, Request& req)
 	{
 		if (req.autoIndex)
 			this->autoIndexFun(data1, req);
+		else if (req.iscgi)
+		{
+			data1 = req.cgistr;
+			std::stringstream ss;
+			ss << data1.length();
+			this->cLength = ss.str();
+			this->cType = "text/html";
+		}
 		else
 			this->readFile(data1, req);
 	}
@@ -86,6 +85,15 @@ void Response::make_res(ServerConfig &server, Request& req)
 	}
 	if (req.method == "POST")
 		this->cLength = "0";
+	if (req.method == "POST" && req.iscgi)
+	{
+		data1 = req.cgistr;
+		std::stringstream ss;
+		ss << data1.length();
+		this->cLength = ss.str();
+		this->cType = "text/html";
+	}
+		// this->cLength = "0";
 	if (req.method == "GET")
 		this->res += "Content-Type: " + this->cType + "\r\n";
 	this->res += "Content-Length: " + this->cLength + "\r\n";
@@ -105,8 +113,17 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0, Request& req
 	this->res += "Server: " + this->server + "\r\n";
 	if (req.method == "GET" && this->code == "200")
 	{
+		std::cout << req.cgistr << "::::::\n";
 		if (req.autoIndex)
 			this->autoIndexFun(data1, req);
+		else if (req.iscgi)
+		{
+			data1 = req.cgistr;
+			std::stringstream ss;
+			ss << data1.length();
+			this->cLength = ss.str();
+			this->cType = "text/html";
+		}
 		else
 			this->readFile(data1, req);
 	}
@@ -133,6 +150,14 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0, Request& req
 	}
 	if (req.method == "POST")
 		this->cLength = "0";
+	if (req.method == "POST" && req.iscgi)
+	{
+		data1 = req.cgistr;
+		std::stringstream ss;
+		ss << data1.length();
+		this->cLength = ss.str();
+		this->cType = "text/html";
+	}
 	if (req.method == "GET")
 		this->res += "Content-Type: " + this->cType + "\r\n";
 	this->res += "Content-Length: " + this->cLength + "\r\n";

@@ -39,7 +39,7 @@ void Response::readFile(std::string &data)
 	this->cLength = ss.str();
 }
 
-void Response::make_res(std::vector<LocationConfig>::iterator &it0)
+void Response::make_res(ServerConfig &server)
 {
 	std::string data1 = "";
 	this->res = this->protocol + " " + this->code + " " + this->msg + "\r\n";
@@ -56,8 +56,8 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0)
 	else if (this->code != "200")
 	{
 		this->cType = "text/html";
-		std::map<int, std::string>::iterator itm = it0->error_pages.find(std::atoi(this->code.c_str()));
-		if (itm != it0->error_pages.end())
+		std::map<int, std::string>::iterator itm = server.error_pages.find(std::atoi(this->code.c_str()));
+		if (itm != server.error_pages.end())
 		{
 			std::ifstream inp(itm->second.c_str(), std::ios::binary);
 			std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());

@@ -13,7 +13,7 @@ Request::~Request()
 
 }
 
-bool Request::parseFirstLine(std::stringstream &ss, std::vector<LocationConfig>::iterator &it0)
+bool Request::parseFirstLine(std::stringstream &ss, ServerConfig &server)
 {
 	std::string line;
 	std::getline(ss, line);
@@ -29,7 +29,7 @@ bool Request::parseFirstLine(std::stringstream &ss, std::vector<LocationConfig>:
 	{
 		this->res.setCode("400");
 		this->res.setMsg("Bad Request");
-		this->res.make_res(it0);
+		this->res.make_res(server);
 		return false;
 	}
 	this->method = this->vec[0];
@@ -54,35 +54,32 @@ void Request::parseHedear(std::stringstream &ss)
 	}
 }
 
-void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std::vector<ServerConfig> &servers)
+void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, ServerConfig &server)
 {
-	std::vector<LocationConfig>::iterator it0 = servers.begin()->locations.begin();
-	if (!this->parseFirstLine(ss, it0))
+	if (!this->parseFirstLine(ss, server))
 		return ;
-	std::vector<ServerConfig>::iterator it = servers.begin();
-	for (it; it != servers.end(); it++)
+	std::vector<LocationConfig>::iterator it1 = server.locations.begin();
+	std::vector<LocationConfig>::iterator it0 = server.locations.end();
+	while (it1 != server.locations.end())
 	{
-		std::vector<LocationConfig>::iterator it1 = it->locations.begin();
-		it0 = it->locations.end();
-		for (it1; it1 != it->locations.end(); it1++)
+		if (this->path.find(it1->path) != std::string::npos)
 		{
-			if (this->path.find(it1->path) != std::string::npos)
-			{
-				it0 = it1;
-				break;
-			}
+			it0 = it1;
+			break;
 		}
-		it1 = it->locations.begin();
-		for (it1; it1 != it->locations.end(); it1++)
-		{
-			if (it1->path.size() != 1 && this->path.find(it1->path) != std::string::npos)
-			{
-				it0 = it1;
-				break;
-			}
-		}
+		it1++;
 	}
-	if (it0 == it->locations.end())
+	it1 = server.locations.begin();
+	while (it1 != server.locations.end())
+	{
+		if (it1->path.size() != 1 && this->path.find(it1->path) != std::string::npos)
+		{
+			it0 = it1;
+			break;
+		}
+		it1++;
+	}
+	if (it0 == server.locations.end())
 	{
 		this->res.setCode("404");
 		this->res.setMsg("Not Found");
@@ -115,7 +112,7 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, std
 	this->res.setAutoIndex(this->autoIndex);
 	this->res.setBody(this->body);
 	this->res.setMap(this->map);
-	this->res.make_res(it0);
+	this->res.make_res(server);
 	return ;
 }
 

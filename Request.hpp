@@ -35,8 +35,8 @@ class Request
 		void get(std::vector<LocationConfig>::iterator &it0);
 		void post(std::stringstream &out, int fdo, std::vector<LocationConfig>::iterator &it0);
 		void del(std::vector<LocationConfig>::iterator &it0);
-		void parser(std::stringstream &ss, std::stringstream &out, int fdo, std::vector<ServerConfig> &servers);
-		bool parseFirstLine(std::stringstream &ss, std::vector<LocationConfig>::iterator &it0);
+		void parser(std::stringstream &ss, std::stringstream &out, int fdo, ServerConfig &server);
+		bool parseFirstLine(std::stringstream &ss, ServerConfig &server);
 		void parseHedear(std::stringstream &ss);
 		std::string& getMethod();
 		std::string& getStatus();

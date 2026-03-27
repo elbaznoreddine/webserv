@@ -100,17 +100,14 @@ void Server::startServers()
 
                     clients[client_fd] = Client(client_fd);
 
-                    sockaddr_in local_addr;
-					socklen_t local_len = sizeof(local_addr);
-
-					getsockname(client_fd, (sockaddr*)&local_addr, &local_len);
+					getsockname(client_fd, (sockaddr*)&client_addr, &client_len);
 
 					char local_ip[INET_ADDRSTRLEN];
-					inet_ntop(AF_INET, &local_addr.sin_addr, local_ip, sizeof(local_ip));
+					inet_ntop(AF_INET, &client_addr.sin_addr, local_ip, sizeof(local_ip));
 
 					std::stringstream ss, s;
 					ss << local_ip;
-					s << ntohs(local_addr.sin_port);
+					s << ntohs(client_addr.sin_port);
 					std::string host = ss.str() + ":" + s.str();
 					std::cout << "Server: "
 							<< host

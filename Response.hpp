@@ -31,6 +31,7 @@ class Response
 		Response();
 		~Response();
 		void make_res(ServerConfig &server);
+		void make_res(std::vector<LocationConfig>::iterator &it0);
 		std::string htmlPage();
 		void setCode(std::string str);
 		void setMsg(std::string str);

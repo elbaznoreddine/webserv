@@ -86,6 +86,53 @@ void Response::make_res(ServerConfig &server)
 		this->res +=  data1;
 }
 
+void Response::make_res(std::vector<LocationConfig>::iterator &it0)
+{
+	std::string data1 = "";
+	this->res = this->protocol + " " + this->code + " " + this->msg + "\r\n";
+	if (!this->location.empty())
+		this->res += "Location: " + this->location + "\r\n";
+	this->res += "Server: " + this->server + "\r\n";
+	if (this->method == "GET" && this->code == "200")
+	{
+		if (this->autoIndex)
+			this->autoIndexFun(data1);
+		else
+			this->readFile(data1);
+	}
+	else if (this->code != "200")
+	{
+		this->cType = "text/html";
+		std::map<int, std::string>::iterator itm = it0->error_pages.find(std::atoi(this->code.c_str()));
+		if (itm != it0->error_pages.end())
+		{
+			std::ifstream inp(itm->second.c_str(), std::ios::binary);
+			if (!inp)
+				data1 = this->htmlPage();
+			else
+			{
+				std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
+				data1 = file;
+			}
+		}
+		else
+			data1 = this->htmlPage();
+		std::stringstream ss;
+		ss << data1.length();
+		this->cLength = ss.str();
+	}
+	if (this->method == "POST")
+		this->cLength = "0";
+	if (this->method == "GET")
+		this->res += "Content-Type: " + this->cType + "\r\n";
+	this->res += "Content-Length: " + this->cLength + "\r\n";
+	this->Cookie();
+	this->res += "Connection: close\r\n";
+	this->res +=  "\r\n";
+	if (!data1.empty())
+		this->res +=  data1;
+}
+
 void Response::Cookie()
 {
 	if (this->map.find("Cookie") != this->map.end())

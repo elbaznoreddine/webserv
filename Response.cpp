@@ -1,24 +1,26 @@
 #include "Response.hpp"
+#include "Request.hpp"
 #include <string>
 
 Response::Response()
 {
-	this->protocol = "HTTP/1.0";
+	// this->protocol = "HTTP/1.0";
 	this->server = "webserv";
 	this->cLength = "0";
 }
+
 
 Response::~Response()
 {
 
 }
 
-void Response::autoIndexFun(std::string &data)
+void Response::autoIndexFun(std::string &data, Request& req)
 {
 	data = "<html>\n";
 	data += "<body>\n";
 	data += "<h1>index</h1>\n";
-	for (std::vector<std::string>::iterator it = folders.begin(); it != folders.end(); it++)
+	for (std::vector<std::string>::iterator it = req.folders.begin(); it != req.folders.end(); it++)
 		data += "<p><a href='/" + *it + "'>" + *it + "</a></p>\n";
 	data += "</body>\n";
 	data += "</html>\n";
@@ -28,30 +30,38 @@ void Response::autoIndexFun(std::string &data)
 	this->cLength = ss.str();
 }
 
-void Response::readFile(std::string &data)
+void Response::readFile(std::string &data, Request& req)
 {
-	std::ifstream inp(this->rpath.c_str(), std::ios::binary);
-	std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
-	data = file;
-	this->cType = this->getType(this->path);
+	// if (find cgi && cgi)
+	// {
+	// 	data = fun();
+
+	// }
+	// else
+	// {
+		std::ifstream inp(req.rpath.c_str(), std::ios::binary);
+		std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
+		data = file;
+		this->cType = this->getType(req.path);
+	// }
 	std::stringstream ss;
 	ss << data.length();
 	this->cLength = ss.str();
 }
 
-void Response::make_res(ServerConfig &server)
+void Response::make_res(ServerConfig &server, Request& req)
 {
 	std::string data1 = "";
-	this->res = this->protocol + " " + this->code + " " + this->msg + "\r\n";
+	this->res = req.protocol + " " + this->code + " " + this->msg + "\r\n";
 	if (!this->location.empty())
 		this->res += "Location: " + this->location + "\r\n";
 	this->res += "Server: " + this->server + "\r\n";
-	if (this->method == "GET" && this->code == "200")
+	if (req.method == "GET" && this->code == "200")
 	{
-		if (this->autoIndex)
-			this->autoIndexFun(data1);
+		if (req.autoIndex)
+			this->autoIndexFun(data1, req);
 		else
-			this->readFile(data1);
+			this->readFile(data1, req);
 	}
 	else if (this->code != "200")
 	{
@@ -74,31 +84,31 @@ void Response::make_res(ServerConfig &server)
 		ss << data1.length();
 		this->cLength = ss.str();
 	}
-	if (this->method == "POST")
+	if (req.method == "POST")
 		this->cLength = "0";
-	if (this->method == "GET")
+	if (req.method == "GET")
 		this->res += "Content-Type: " + this->cType + "\r\n";
 	this->res += "Content-Length: " + this->cLength + "\r\n";
-	this->Cookie();
+	this->Cookie(req);
 	this->res += "Connection: close\r\n";
 	this->res +=  "\r\n";
 	if (!data1.empty())
 		this->res +=  data1;
 }
 
-void Response::make_res(std::vector<LocationConfig>::iterator &it0)
+void Response::make_res(std::vector<LocationConfig>::iterator &it0, Request& req)
 {
 	std::string data1 = "";
-	this->res = this->protocol + " " + this->code + " " + this->msg + "\r\n";
+	this->res = req.protocol + " " + this->code + " " + this->msg + "\r\n";
 	if (!this->location.empty())
 		this->res += "Location: " + this->location + "\r\n";
 	this->res += "Server: " + this->server + "\r\n";
-	if (this->method == "GET" && this->code == "200")
+	if (req.method == "GET" && this->code == "200")
 	{
-		if (this->autoIndex)
-			this->autoIndexFun(data1);
+		if (req.autoIndex)
+			this->autoIndexFun(data1, req);
 		else
-			this->readFile(data1);
+			this->readFile(data1, req);
 	}
 	else if (this->code != "200")
 	{
@@ -121,22 +131,22 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0)
 		ss << data1.length();
 		this->cLength = ss.str();
 	}
-	if (this->method == "POST")
+	if (req.method == "POST")
 		this->cLength = "0";
-	if (this->method == "GET")
+	if (req.method == "GET")
 		this->res += "Content-Type: " + this->cType + "\r\n";
 	this->res += "Content-Length: " + this->cLength + "\r\n";
-	this->Cookie();
+	this->Cookie(req);
 	this->res += "Connection: close\r\n";
 	this->res +=  "\r\n";
 	if (!data1.empty())
 		this->res +=  data1;
 }
 
-void Response::Cookie()
+void Response::Cookie(Request& req)
 {
-	if (this->map.find("Cookie") != this->map.end())
-		if (this->map.find("Cookie")->second.find("login=1"))
+	if (req.map.find("Cookie") != req.map.end())
+		if (req.map.find("Cookie")->second.find("login=1"))
 			this->res += "Set-Cookie: sid=1\r\n";
 }
 
@@ -163,36 +173,6 @@ void Response::setMsg(std::string str)
 	this->msg = str;
 }
 
-void Response::setMethod(std::string str)
-{
-	this->method = str;
-}
-
-void Response::setPath(std::string str)
-{
-	this->path = str;
-}
-
-void Response::setRpath(std::string str)
-{
-	this->rpath = str;
-}
-
-void Response::setFolders(std::vector<std::string>& vec)
-{
-	this->folders = vec;
-}
-
-void Response::setIndex(bool b)
-{
-	this->index = b;
-}
-
-void Response::setAutoIndex(bool b)
-{
-	this->autoIndex = b;
-}
-
 void Response::setBody(std::string str)
 {
 	this->body = str;
@@ -209,10 +189,6 @@ std::string Response::getType(std::string& str)
 	return "text/plain";
 }
 
-void Response::setMap(std::map<std::string, std::string>& map)
-{
-	this->map = map;
-}
 
 std::string Response::getRes()
 {

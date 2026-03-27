@@ -1,5 +1,6 @@
 #include "Request.hpp"
 #include "headers/Server.hpp"
+#include "Response.hpp"
 
 Request::Request()
 {
@@ -29,12 +30,20 @@ bool Request::parseFirstLine(std::stringstream &ss, ServerConfig &server)
 	{
 		this->res.setCode("400");
 		this->res.setMsg("Bad Request");
-		this->res.make_res(server);
+		this->res.make_res(server, *this);
 		return false;
 	}
 	this->method = this->vec[0];
 	this->path = this->vec[1];
 	this->protocol = this->vec[2];
+
+	size_t find = this->path.find("?");
+	if (find != std::string::npos)
+	{
+		this->query = this->path.substr(this->path.find("?") + 1);
+		this->path = this->path.substr(0, this->path.find("?"));
+		this->map.insert(std::make_pair("QUERY_STRING", this->query));
+	}
 	return true;
 }
 
@@ -104,15 +113,7 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, Ser
 		if (this->method == "POST")
 			post(out, fdo, it0);
 	}
-	this->res.setMethod(this->method);
-	this->res.setPath(this->path);
-	this->res.setRpath(this->rpath);
-	this->res.setFolders(this->folders);
-	this->res.setIndex(this->index);
-	this->res.setAutoIndex(this->autoIndex);
-	this->res.setBody(this->body);
-	this->res.setMap(this->map);
-	this->res.make_res(it0);
+	this->res.make_res(it0, *this);
 	return ;
 }
 
@@ -231,7 +232,6 @@ void  Request::postAction(std::stringstream &out, bool upload)
 {
 	std::string line;
 	std::string filename;
-	std::map<std::string, std::string> bmap;
 	while (std::getline(out, line))
 	{
 		if (line.find(this->boundary + "--\r") != std::string::npos || line.empty())
@@ -253,7 +253,7 @@ void  Request::postAction(std::stringstream &out, bool upload)
 			else
 				line = "";
 			std::string val = line;
-			bmap.insert(std::make_pair(key, val));
+			this->querys.insert(std::make_pair(key, val));
 		}
 		else if (line == "\r" && !filename.empty() && upload)
 		{
@@ -311,7 +311,6 @@ void Request::post(std::stringstream &out, int fdo, std::vector<LocationConfig>:
 			{
 				DIR *dir;
 				dir = opendir(this->rpath.c_str());
-				struct dirent *ent;
 				if (dir)
 				{
 					this->fullBody(out, fdo);

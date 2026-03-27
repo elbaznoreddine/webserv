@@ -19,6 +19,8 @@ class Request
 		std::vector<std::string> vec;
 		std::vector<std::string> folders;
 		std::map<std::string, std::string> map;
+		std::map<std::string, std::string> querys;
+		std::string query;
 		std::string body;
 		std::string method;
 		std::string path;

@@ -1,4 +1,4 @@
-CPPFLAGS = #-Wall -Wextra -Werror -std=c++98
+CPPFLAGS = -Wall -Wextra -Werror -std=c++98
 CPP = c++
 
 SRC =  srcs/main.cpp \

@@ -1,23 +1,17 @@
 #include "headers/Server.hpp"
 #include "sys/wait.h"
 #include "Request.hpp"
+#include "cgi.hpp"
 #define TIME_OUT 5
 
-enum CgiError {
-    CGI_OK          =  0,
-    CGI_TIMEOUT     = -1,
-    CGI_EXECVE_FAIL = -2,
-    CGI_FORK_FAIL   = -3,
-    CGI_PIPE_FAIL   = -4,
-    CGI_EXIT_ERROR  = -5,
-};
+
 
 std::string getInterpreter(std::string path, LocationConfig &cigLocation)
 {
 	std::map<std::string, std::string> cgi = cigLocation.getCgiHandlers();
-    if ((path.rfind(".py")  == path.size() - 3))
+    if ((path.rfind(".py")  == path.size() - 3) && (cgi.find(".py") != cgi.end()))
 		return "/usr/bin/python3";
-    if (path.rfind(".php") == path.size() - 4)
+    if ((path.rfind(".php") == path.size() - 4) && (cgi.find(".php") != cgi.end()))
 		return "/usr/bin/php";
     return "";
 }

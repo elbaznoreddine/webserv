@@ -3,7 +3,7 @@ LocationConfig::LocationConfig() : ServerConfig(), upload_enable(false), redirec
 {
 }
 
-LocationConfig::LocationConfig(const std::string& p) : ServerConfig(), path(p), upload_enable(false), redirect_code(0)
+LocationConfig::LocationConfig(const std::string& p, ServerConfig& s) : ServerConfig(s), path(p), upload_enable(false), redirect_code(0)
 {
 }
 

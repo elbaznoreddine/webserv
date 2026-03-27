@@ -169,8 +169,8 @@ void ConfigParser::parse_directive(const std::string& line, ServerConfig& config
     {
         if (tokens.size() < 2)
             throw std::runtime_error("root directive requires a value");
-        if (!config.getRoot().empty())
-			throw std::runtime_error("root directive is duplicate");
+        // if (!config.getRoot().empty())
+		// 	throw std::runtime_error("root directive is duplicate");
         std::string value = tokens[1];
         if (value[value.length() - 1] == ';')
             value = value.substr(0, value.length() - 1);
@@ -224,8 +224,8 @@ void ConfigParser::parse_directive(const std::string& line, ServerConfig& config
     {
 		if (tokens.size() < 2)
 			throw std::runtime_error("client_max_body_size directive requires a value");
-		if (!config.getClientMaxBodySize().empty())
-			throw std::runtime_error("client_max_body_size directive is duplicate");
+		// if (!config.getClientMaxBodySize().empty())
+		// 	throw std::runtime_error("client_max_body_size directive is duplicate");
         std::string value = tokens[1];
         if (value[value.length() - 1] == ';')
             value = value.substr(0, value.length() - 1);
@@ -270,6 +270,8 @@ void ConfigParser::parse_location_directive(const std::string& line, LocationCon
     }
     if (directive == "return" || directive == "redirect")
     {
+		if (directive_has_semicolon && tokens.size() == 1)
+            throw std::runtime_error("redirect directive requires a value");
         if (tokens.size() < 2)
             throw std::runtime_error("redirect directive requires a value");
         if (tokens.size() >= 2)
@@ -347,7 +349,7 @@ void ConfigParser::parse_location_directive(const std::string& line, LocationCon
     }
 }
 
-LocationConfig ConfigParser::parse_location(const std::vector<std::string>& lines, size_t start, size_t end)
+LocationConfig ConfigParser::parse_location(ServerConfig& server, const std::vector<std::string>& lines, size_t start, size_t end)
 {
     if (start >= lines.size())
         throw std::runtime_error("Invalid location block");
@@ -370,7 +372,7 @@ LocationConfig ConfigParser::parse_location(const std::vector<std::string>& line
     if (path.empty())
         throw std::runtime_error("location directive requires a path");
     
-    LocationConfig location(path);
+    LocationConfig location(path, server);
     
     int brace_count = 0;
     bool found_open = false;
@@ -437,8 +439,8 @@ ServerConfig ConfigParser::parse_server(const std::vector<std::string>& lines, s
                 brace_count--;
                 if (brace_count == 0)
                 {
-                    LocationConfig location = parse_location(lines, location_start, i);
-                    server.addLocation(location);
+                    // LocationConfig location = parse_location(lines, location_start, i);
+                    server.addLocation(parse_location(server, lines, location_start, i));
                     in_location = false;
                 }
             }

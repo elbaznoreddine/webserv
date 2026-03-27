@@ -13,7 +13,7 @@ public:
 
 public:
     LocationConfig();
-    LocationConfig(const std::string& p);
+    LocationConfig(const std::string& p, ServerConfig& s);
     ~LocationConfig();
 
     const std::string& getPath() const;

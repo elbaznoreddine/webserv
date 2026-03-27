@@ -20,7 +20,7 @@ class ConfigParser
 		std::vector<std::string> split(const std::string& str);
 		
 		ServerConfig parse_server(const std::vector<std::string>& lines, size_t start, size_t end);
-		LocationConfig parse_location(const std::vector<std::string>& lines, size_t start, size_t end);
+		LocationConfig parse_location(ServerConfig& server, const std::vector<std::string>& lines, size_t start, size_t end);
 		
 		void parse_directive(const std::string& line, ServerConfig& config);
 		void parse_location_directive(const std::string& line, LocationConfig& config);

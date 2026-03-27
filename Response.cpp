@@ -60,8 +60,13 @@ void Response::make_res(ServerConfig &server)
 		if (itm != server.error_pages.end())
 		{
 			std::ifstream inp(itm->second.c_str(), std::ios::binary);
-			std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
-			data1 = file;
+			if (!inp)
+				data1 = this->htmlPage();
+			else
+			{
+				std::string file((std::istreambuf_iterator<char>(inp)),std::istreambuf_iterator<char>());
+				data1 = file;
+			}
 		}
 		else
 			data1 = this->htmlPage();

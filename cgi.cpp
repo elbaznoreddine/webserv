@@ -36,7 +36,10 @@ char **buildEnv(Request &req)
 
     char **envp = new char*[env.size() + 1];
     for (size_t i = 0; i < env.size(); i++)
-        envp[i] = strdup(env[i].c_str());
+    {
+		envp[i] = new char[env[i].size()];
+		std::strcpy(envp[i], env[i].c_str());
+	}
     envp[env.size()] = NULL;
     return envp;
 }
@@ -44,7 +47,7 @@ char **buildEnv(Request &req)
 void freeEnv(char **envp)
 {
     for (int i = 0; envp[i]; i++)
-        free(envp[i]);
+        delete envp[i];
     delete[] envp;
 }
 
@@ -90,7 +93,7 @@ std::string cgiHandler(std::string full_path, char **env, std::string interprete
     int stdout_pipe[2];
 
     if (pipe(stdin_pipe) < 0 || pipe(stdout_pipe) < 0)
-        return cgiErrorResponse(CGI_PIPE_FAIL, req);
+        return (freeEnv(env), cgiErrorResponse(CGI_PIPE_FAIL, req));
 
     pid_t pid = fork();
     if (pid < 0)
@@ -99,7 +102,7 @@ std::string cgiHandler(std::string full_path, char **env, std::string interprete
 		close(stdin_pipe[1]);
         close(stdout_pipe[0]);
 		close(stdout_pipe[1]);
-        return cgiErrorResponse(CGI_FORK_FAIL, req);
+        return (freeEnv(env), cgiErrorResponse(CGI_FORK_FAIL, req));
     }
 
     if (pid == 0)
@@ -117,7 +120,7 @@ std::string cgiHandler(std::string full_path, char **env, std::string interprete
             NULL
         };
         if (execve(interpreter.c_str(), args, env) < 0)
-			return cgiErrorResponse(CGI_EXECVE_FAIL, req);
+			return (freeEnv(env), cgiErrorResponse(CGI_EXECVE_FAIL, req));
     	exit(1);
     }
 
@@ -175,9 +178,9 @@ std::string cgiHandler(std::string full_path, char **env, std::string interprete
     close(stdout_pipe[0]);
 
     if (timed_out)
-        return cgiErrorResponse(CGI_TIMEOUT, req);
+        return (freeEnv(env), cgiErrorResponse(CGI_TIMEOUT, req));
 
     if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-        return cgiErrorResponse(CGI_EXIT_ERROR, req);
-    return out;
+        return (freeEnv(env), cgiErrorResponse(CGI_EXIT_ERROR, req));
+    return (freeEnv(env), out);
 }

@@ -113,7 +113,6 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0, Request& req
 	this->res += "Server: " + this->server + "\r\n";
 	if (req.method == "GET" && this->code == "200")
 	{
-		std::cout << req.cgistr << "::::::\n";
 		if (req.autoIndex)
 			this->autoIndexFun(data1, req);
 		else if (req.iscgi)

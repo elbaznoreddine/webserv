@@ -169,8 +169,6 @@ void ConfigParser::parse_directive(const std::string& line, ServerConfig& config
     {
         if (tokens.size() < 2)
             throw std::runtime_error("root directive requires a value");
-        // if (!config.getRoot().empty())
-		// 	throw std::runtime_error("root directive is duplicate");
         std::string value = tokens[1];
         if (value[value.length() - 1] == ';')
             value = value.substr(0, value.length() - 1);
@@ -224,8 +222,6 @@ void ConfigParser::parse_directive(const std::string& line, ServerConfig& config
     {
 		if (tokens.size() < 2)
 			throw std::runtime_error("client_max_body_size directive requires a value");
-		// if (!config.getClientMaxBodySize().empty())
-		// 	throw std::runtime_error("client_max_body_size directive is duplicate");
         std::string value = tokens[1];
         if (value[value.length() - 1] == ';')
             value = value.substr(0, value.length() - 1);
@@ -333,16 +329,6 @@ void ConfigParser::parse_location_directive(const std::string& line, LocationCon
         
         config.addCgiHandler(extension, interpreter);
     }
-    else if (directive == "upload_path")
-    {
-        if (tokens.size() < 2)
-            throw std::runtime_error("upload_path directive requires a value");
-        
-        std::string value = tokens[1];
-        if (value[value.length() - 1] == ';')
-            value = value.substr(0, value.length() - 1);
-        config.setUploadPath(value);
-    }
     else
     {
         parse_directive(line, config);
@@ -417,6 +403,8 @@ ServerConfig ConfigParser::parse_server(const std::vector<std::string>& lines, s
     for (size_t i = start; i <= end && i < lines.size(); i++)
     {
         std::string line = lines[i];
+		if (check_server(line))
+			throw std::runtime_error("server inside server");
         
         if (check_location(line))
         {
@@ -439,7 +427,6 @@ ServerConfig ConfigParser::parse_server(const std::vector<std::string>& lines, s
                 brace_count--;
                 if (brace_count == 0)
                 {
-                    // LocationConfig location = parse_location(lines, location_start, i);
                     server.addLocation(parse_location(server, lines, location_start, i));
                     in_location = false;
                 }
@@ -496,8 +483,6 @@ bool ConfigParser::parse()
 				return false;
 			}
 		}
-
-        
         all_data.push_back(cleaned);
     }
 

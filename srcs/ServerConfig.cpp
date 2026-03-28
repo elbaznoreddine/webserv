@@ -1,6 +1,5 @@
 #include "../headers/ConfigParser.hpp"
 
-
 ServerConfig::ServerConfig() 
     : autoindex(false)
 {
@@ -10,15 +9,6 @@ ServerConfig::~ServerConfig()
 {
 }
 
-// int ServerConfig::getPort() const
-// {
-//     return port;
-// }
-
-// const std::string& ServerConfig::getHost() const
-// {
-//     return host;
-// }
 void ServerConfig::addListen(const std::string& host, int port)
 {
     all_listen.push_back(Listen(host, port));
@@ -27,17 +17,6 @@ const std::vector<Listen> &ServerConfig::getListen() const
 {
 	return (all_listen);
 }
-
-// void ServerConfig::setPort(int p)
-// {
-//     port = p;
-// }
-
-// void ServerConfig::setHost(const std::string& h)
-// {
-//     host = h;
-// }
-
 
 const std::string& ServerConfig::getRoot() const
 {

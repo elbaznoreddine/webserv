@@ -109,9 +109,6 @@ void Server::startServers()
 					ss << local_ip;
 					s << ntohs(client_addr.sin_port);
 					std::string host = ss.str() + ":" + s.str();
-					std::cout << "Server: "
-							<< host
-							<< std::endl;
 					for (std::vector<ServerConfig>::iterator it = servers.begin(); it != servers.end(); it++)
 					{
 						if (std::find(it->hosts.begin(), it->hosts.end(), host) != it->hosts.end())
@@ -123,6 +120,9 @@ void Server::startServers()
 								clients[client_fd].server = *it;
 						}
 					}
+					std::cout << "Server: "
+							<< host
+							<< std::endl;
                 }
             }
             else

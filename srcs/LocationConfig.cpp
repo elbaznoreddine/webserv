@@ -21,10 +21,6 @@ const std::string& LocationConfig::getRedirect() const
     return redirect;
 }
 
-const std::string& LocationConfig::getUploadPath() const
-{
-    return upload_path;
-}
 
 bool LocationConfig::getUploadEnable() const
 {
@@ -49,11 +45,6 @@ void LocationConfig::setPath(const std::string& p)
 void LocationConfig::setRedirect(const std::string& r)
 {
     redirect = r;
-}
-
-void LocationConfig::setUploadPath(const std::string& p)
-{
-    upload_path = p;
 }
 
 void LocationConfig::setUploadEnable(bool enable)

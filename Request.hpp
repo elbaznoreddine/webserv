@@ -12,6 +12,9 @@
 #include <dirent.h>
 #include "Response.hpp"
 #include "headers/ServerConfig.hpp"
+#include "headers/Client.hpp"
+#include "headers/Server.hpp"
+#include "cgi.hpp"
 
 class Request
 {
@@ -39,8 +42,8 @@ class Request
 		void get(std::vector<LocationConfig>::iterator &it0);
 		void post(std::stringstream &out, int fdo, std::vector<LocationConfig>::iterator &it0);
 		void del(std::vector<LocationConfig>::iterator &it0);
-		void parser(std::stringstream &ss, std::stringstream &out, int fdo, ServerConfig &server);
-		bool parseFirstLine(std::stringstream &ss, ServerConfig &server);
+		void parser(std::stringstream &ss, std::stringstream &out, int fdo, Client &client);
+		bool parseFirstLine(std::stringstream &ss, Client &client);
 		void parseHedear(std::stringstream &ss);
 		std::string& getMethod();
 		std::string& getStatus();

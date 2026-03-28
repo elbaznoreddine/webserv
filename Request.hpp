@@ -46,8 +46,6 @@ class Request
 		void parser(std::stringstream &ss, std::stringstream &out, int fdo, Client &client);
 		bool parseFirstLine(std::stringstream &ss, Client &client);
 		void parseHedear(std::stringstream &ss);
-		std::string& getMethod();
-		std::string& getStatus();
 		void fullBody(std::stringstream &out, int fdo);
 		void getBoundary();
 		void postAction(std::stringstream &out, bool upload);

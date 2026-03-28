@@ -401,13 +401,3 @@ void Request::del(std::vector<LocationConfig>::iterator &it0)
 			this->res.setMsg("Forbidden");
 	}
 }
-
-std::string& Request::getMethod()
-{
-	return this->method;
-}
-
-std::string& Request::getStatus()
-{
-	return this->res.getStatus();
-}

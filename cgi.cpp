@@ -37,7 +37,7 @@ char **buildEnv(Request &req)
     char **envp = new char*[env.size() + 1];
     for (size_t i = 0; i < env.size(); i++)
     {
-		envp[i] = new char[env[i].size()];
+		envp[i] = new char[env[i].size() + 1];
 		std::strcpy(envp[i], env[i].c_str());
 	}
     envp[env.size()] = NULL;

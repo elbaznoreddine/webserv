@@ -30,6 +30,7 @@ class Request
 		std::string rpath;
 		std::string protocol;
 		std::string boundary;
+		std::string dir;
 		bool index;
 		bool autoIndex;
 		bool iscgi;

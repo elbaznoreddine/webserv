@@ -211,17 +211,6 @@ std::string Response::getType(std::string& str)
 	return "text/plain";
 }
 
-
-// std::string Response::getRes()
-// {
-// 	return buff;
-// }
-
-std::string& Response::getStatus()
-{
-	return this->code;
-}
-
 void Response::setRedirect(std::string &loc)
 {
 	this->location = loc;

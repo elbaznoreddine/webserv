@@ -32,10 +32,8 @@ class Response
 		void setMsg(std::string str);
 		void setBody(std::string str);
 		std::string getType(std::string& str);
-		// std::string getRes();
 		void Cookie(Request& req, std::string &buff);
 		void autoIndexFun(std::string &data, Request& req);
 		void readFile(std::string &data, Request& req);
-		std::string& getStatus();
 		void setRedirect(std::string &loc);
 };

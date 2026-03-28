@@ -1,6 +1,5 @@
 #include "Response.hpp"
 #include "Request.hpp"
-#include <string>
 
 Response::Response()
 {
@@ -40,13 +39,13 @@ void Response::readFile(std::string &data, Request& req)
 	this->cLength = ss.str();
 }
 
-void Response::make_res(ServerConfig &server, Request& req)
+void Response::make_res(ServerConfig &server, Request& req, std::string &buff)
 {
 	std::string data1 = "";
-	this->res = req.protocol + " " + this->code + " " + this->msg + "\r\n";
+	buff = req.protocol + " " + this->code + " " + this->msg + "\r\n";
 	if (!this->location.empty())
-		this->res += "Location: " + this->location + "\r\n";
-	this->res += "Server: " + this->server + "\r\n";
+		buff += "Location: " + this->location + "\r\n";
+	buff += "Server: " + this->server + "\r\n";
 	if (req.method == "GET" && this->code == "200")
 	{
 		if (req.autoIndex)
@@ -93,24 +92,23 @@ void Response::make_res(ServerConfig &server, Request& req)
 		this->cLength = ss.str();
 		this->cType = "text/html";
 	}
-		// this->cLength = "0";
 	if (req.method == "GET")
-		this->res += "Content-Type: " + this->cType + "\r\n";
-	this->res += "Content-Length: " + this->cLength + "\r\n";
-	this->Cookie(req);
-	this->res += "Connection: close\r\n";
-	this->res +=  "\r\n";
+		buff += "Content-Type: " + this->cType + "\r\n";
+	buff += "Content-Length: " + this->cLength + "\r\n";
+	this->Cookie(req, buff);
+	buff += "Connection: close\r\n";
+	buff +=  "\r\n";
 	if (!data1.empty())
-		this->res +=  data1;
+		buff +=  data1;
 }
 
-void Response::make_res(std::vector<LocationConfig>::iterator &it0, Request& req)
+void Response::make_res(std::vector<LocationConfig>::iterator &it0, Request& req, std::string &buff)
 {
 	std::string data1 = "";
-	this->res = req.protocol + " " + this->code + " " + this->msg + "\r\n";
+	buff = req.protocol + " " + this->code + " " + this->msg + "\r\n";
 	if (!this->location.empty())
-		this->res += "Location: " + this->location + "\r\n";
-	this->res += "Server: " + this->server + "\r\n";
+		buff += "Location: " + this->location + "\r\n";
+	buff += "Server: " + this->server + "\r\n";
 	if (req.method == "GET" && this->code == "200")
 	{
 		if (req.autoIndex)
@@ -158,20 +156,20 @@ void Response::make_res(std::vector<LocationConfig>::iterator &it0, Request& req
 		this->cType = "text/html";
 	}
 	if (req.method == "GET")
-		this->res += "Content-Type: " + this->cType + "\r\n";
-	this->res += "Content-Length: " + this->cLength + "\r\n";
-	this->Cookie(req);
-	this->res += "Connection: close\r\n";
-	this->res +=  "\r\n";
+		buff += "Content-Type: " + this->cType + "\r\n";
+	buff += "Content-Length: " + this->cLength + "\r\n";
+	this->Cookie(req, buff);
+	buff += "Connection: close\r\n";
+	buff +=  "\r\n";
 	if (!data1.empty())
-		this->res +=  data1;
+		buff +=  data1;
 }
 
-void Response::Cookie(Request& req)
+void Response::Cookie(Request& req, std::string &buff)
 {
 	if (req.map.find("Cookie") != req.map.end())
 		if (req.map.find("Cookie")->second.find("login=1"))
-			this->res += "Set-Cookie: sid=1\r\n";
+			buff += "Set-Cookie: sid=1\r\n";
 }
 
 std::string Response::htmlPage()
@@ -214,10 +212,10 @@ std::string Response::getType(std::string& str)
 }
 
 
-std::string Response::getRes()
-{
-	return this->res;
-}
+// std::string Response::getRes()
+// {
+// 	return buff;
+// }
 
 std::string& Response::getStatus()
 {

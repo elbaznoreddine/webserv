@@ -1,7 +1,4 @@
 #include "Request.hpp"
-#include "headers/Server.hpp"
-#include "Response.hpp"
-#include "cgi.hpp"
 
 Request::Request()
 {
@@ -16,7 +13,7 @@ Request::~Request()
 
 }
 
-bool Request::parseFirstLine(std::stringstream &ss, ServerConfig &server)
+bool Request::parseFirstLine(std::stringstream &ss, Client &client)
 {
 	std::string line;
 	std::getline(ss, line);
@@ -32,7 +29,7 @@ bool Request::parseFirstLine(std::stringstream &ss, ServerConfig &server)
 	{
 		this->res.setCode("400");
 		this->res.setMsg("Bad Request");
-		this->res.make_res(server, *this);
+		this->res.make_res(client.server, *this, client.writeBuffer);
 		return false;
 	}
 	this->method = this->vec[0];
@@ -65,13 +62,13 @@ void Request::parseHedear(std::stringstream &ss)
 	}
 }
 
-void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, ServerConfig &server)
+void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, Client &client)
 {
-	if (!this->parseFirstLine(ss, server))
+	if (!this->parseFirstLine(ss, client))
 		return ;
-	std::vector<LocationConfig>::iterator it1 = server.locations.begin();
-	std::vector<LocationConfig>::iterator it0 = server.locations.end();
-	while (it1 != server.locations.end())
+	std::vector<LocationConfig>::iterator it1 = client.server.locations.begin();
+	std::vector<LocationConfig>::iterator it0 = client.server.locations.end();
+	while (it1 != client.server.locations.end())
 	{
 		if (this->path.find(it1->path) != std::string::npos)
 		{
@@ -80,8 +77,8 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, Ser
 		}
 		it1++;
 	}
-	it1 = server.locations.begin();
-	while (it1 != server.locations.end())
+	it1 = client.server.locations.begin();
+	while (it1 != client.server.locations.end())
 	{
 		if (it1->path.size() != 1 && this->path.find(it1->path) != std::string::npos)
 		{
@@ -90,7 +87,7 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, Ser
 		}
 		it1++;
 	}
-	if (it0 == server.locations.end())
+	if (it0 == client.server.locations.end())
 	{
 		this->res.setCode("404");
 		this->res.setMsg("Not Found");
@@ -115,7 +112,7 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, Ser
 		if (this->method == "POST")
 			post(out, fdo, it0);
 	}
-	this->res.make_res(it0, *this);
+	this->res.make_res(it0, *this, client.writeBuffer);
 	return ;
 }
 

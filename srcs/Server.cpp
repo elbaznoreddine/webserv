@@ -162,9 +162,8 @@ void Server::startServers()
 						}
 						bytes = recv(fd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
 					}
-					req.parser(ss, out, fd, client.server);
+					req.parser(ss, out, fd, client);
                     client.lastActivity = now;
-					client.writeBuffer.append(req.res.getRes());
 					client.state = Client::WRITING;
 					pollfds[i].events = POLLOUT;
                 }

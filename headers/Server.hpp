@@ -14,7 +14,6 @@
 class Server
 {
 	private:
-		std::vector<int> fds;
 		std::map<int, Client> clients;
 		std::vector<int> server_fds; 
 		ConfigParser& _servers;

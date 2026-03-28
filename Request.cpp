@@ -43,6 +43,11 @@ bool Request::parseFirstLine(std::stringstream &ss, Client &client)
 		this->path = this->path.substr(0, this->path.find("?"));
 		this->map.insert(std::make_pair("QUERY_STRING", this->query));
 	}
+
+	size_t len = this->path.rfind('/', this->path.length());
+	if (len == 0)
+		len++;
+	this->dir = this->path.substr(0, len);
 	return true;
 }
 
@@ -70,20 +75,12 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, Cli
 	std::vector<LocationConfig>::iterator it0 = client.server.locations.end();
 	while (it1 != client.server.locations.end())
 	{
-		if (this->path.find(it1->path) != std::string::npos)
+		if (it1->path[0] != '/')
+			it1->path = "/" + it1->path;
+		if (this->dir == it1->path)
 		{
 			it0 = it1;
-			break;
-		}
-		it1++;
-	}
-	it1 = client.server.locations.begin();
-	while (it1 != client.server.locations.end())
-	{
-		if (it1->path.size() != 1 && this->path.find(it1->path) != std::string::npos)
-		{
-			it0 = it1;
-			break;
+			break ;
 		}
 		it1++;
 	}
@@ -91,6 +88,8 @@ void Request::parser(std::stringstream &ss, std::stringstream &out, int fdo, Cli
 	{
 		this->res.setCode("404");
 		this->res.setMsg("Not Found");
+		this->res.make_res(client.server, *this, client.writeBuffer);
+		return;
 	}
 	else if (!it0->redirect.empty())
 	{
